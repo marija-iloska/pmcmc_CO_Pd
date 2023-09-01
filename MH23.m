@@ -30,7 +30,7 @@ yR3 = y(regions{3});
 y2max = max(yR2);
 
 % Upper bound of a1
-a2_lim = (M - a3_star*cov_sat)/(M - cov_sat);
+a2_lim = (M - a3_star*y2max)/(M - y2max);
 
 % Sample a1
 a2_star = a2_lim*y2_star;

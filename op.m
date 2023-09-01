@@ -10,7 +10,7 @@ load expected_coverage.mat
 tp_idx = 45;
 cut_off = 0.33;
 
-t_idx = 3;
+t_idx = 1;
 
 % Data
 time = time_mat_area{t_idx};
@@ -36,49 +36,47 @@ theta_min = 0;
 % System specifications
 sys_specs = {var_A, eps_sat, cov_sat(t_idx)};
 bounds = {tp_idx, cut_off, theta_max, theta_min};
+P = 0.001;
+dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha1 = 2;
-beta1 = 2;
+alpha4 = 5;
+beta4 = 5;
 
-alpha2 = 2;
-beta2 = 2;
+alpha3 = 4;
+beta3 = 4;
 
-alpha3 = 6;
-beta3 = 2;
+alpha2 = 100;
+beta2 = 5;
 
-alpha4 = 6;
-beta4 = 2;
+alpha1 = 100;
+beta1 = 10;
 
-% Propose sample for a
-a4 = betarnd(alpha4, beta4);
-y1 = betarnd(alpha1, beta1);
+% Propose k4
+k4 = betarnd(alpha4, beta4);
+k3 = betarnd(alpha3, beta3);
 
-% Max data point in R1
-y1max = 0.33;
-y2max = cov_sat(t_idx);
 
-% Upper bound of a1
-a1_lim = (cut_off - a4*y1max)/(M - y1max);
+% Propose k1
+x1 = gamrnd(alpha1, beta1);
+k1 = k4*cut_off/(theta_max - cut_off)/P + x1;
 
-% Sample a1
-a1 = a1_lim*y1;
+% Propose k2
+x2 = gamrnd(alpha1, beta1);
+k2 = k3*cut_off/(theta_max - cut_off)/P + x2;
 
-% Propose sample for a
-a3 = betarnd(alpha3, beta3);
-y2 = betarnd(alpha2, beta2);
+% Prep parameters
+a1 = k1*dt*P;
+a4 = 1 - k4*dt;
+a2 = k2*dt*P;
+a3 = 1 - k3*dt;
 
-% Upper bound of a1
-a2_lim = (M - a4*y2max)/(M - y2max);
+% MH inputs
+x14 = [k1, k4, x1];
+x23 = [k2, k3, x2];
 
-% Sample a1
-a2 = a2_lim*y2;
 
-% Concatenate
-a14 = [a1, a4];
-a23 = [a2, a3];
-
-% Input
+% PF Input
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
@@ -86,9 +84,10 @@ tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 alpha = 5;
+var = 0.01;
 
 % Run GIBBS
-J = 300;
+J = 5000;
 J0 = round(J/2);
 
 tic
@@ -108,20 +107,33 @@ for j = 1:J
     end
 
     % Sample Region 1 and 4 
-    x = MH14(theta_sample, regions, a14, bounds, alpha1, alpha4, beta1, alpha);
-    a14 = x;
-    achain14(j,:) = a14;
+    x = MH14op(theta_sample, regions, x14, bounds, P, dt, var, alpha4, alpha, alpha1, beta1);
+    k1 = x(1);
+    k4 = x(2);
+    x1 = x(3);
+    x14 = [k1, k4, x1];
+    xchain14(j,:) = x14;
 
 
     % Sample Region 2 and 3
-    x = MH23(theta_sample, regions, a23,  bounds, alpha2, alpha3, beta2, alpha, cov_sat(t_idx));
-    a23 = x;
-    achain23(j,:) = a23;
+    x = MH23op(theta_sample, regions, x23,  bounds, P, dt, var, alpha3, alpha, alpha2, beta2, cov_sat(t_idx));
+    k2 = x(1);
+    k3 = x(2);
+    x2 = x(3);
+    x23 = [k2, k3, x2];
+    xchain23(j,:) = x23;
 
 
-    % Concatenate
-    a = [a14(1), a23(1), 0, 0];
-    b = [a14(2), a23(2), a23(2), a14(2)];
+    
+    % Prep parameters
+    a1 = k1*dt*P;
+    a4 = 1 - k4*dt;
+    a2 = k2*dt*P;
+    a3 = 1 - k3*dt;
+
+    % Concatenate for PF Input
+    a = [a1, a2, 0, 0];
+    b = [a4, a3, a3, a4];
 
 
     % Posterior for measurement variance
@@ -135,10 +147,7 @@ toc
 
 theta_est = mean(theta_chain(J0:J,:),1);
 epsilon_est = mean(epsilon_chain(J0:J,:),1);
-% k_des = mean(kXO(J0:J,:),1);
-% k_ads = mean(kOX(J0:J,:),1);
 
-k_des = mean((1 -achain14(J0:J, 2),1)
 
 figure;
 plot(time, epsilon_est.*theta_est)
@@ -157,18 +166,22 @@ plot(theta_est, 'k', 'linewidth',2)
 
 
 figure;
-plot(achain23(:,1), 'linewidth', 1)
-hold on
-plot(achain23(:,2), 'k', 'linewidth', 1)
+plot(xchain23(:,1), 'linewidth', 1)
+title('Regions 2 and 3', 'FontSize', 15)
+
+figure;
+plot(xchain23(:,2), 'linewidth', 1)
 title('Regions 2 and 3', 'FontSize', 15)
 
 
 figure;
-plot(achain14(:,1), 'linewidth', 1)
-hold on
-plot(achain14(:,2), 'k', 'linewidth', 1)
-ylim([0,1])
+plot(xchain14(:,1), 'k', 'linewidth', 1)
 title('Regions 1 and 4', 'FontSize', 15)
+
+figure;
+plot(xchain14(:,2), 'k', 'linewidth', 1)
+title('Regions 1 and 4', 'FontSize', 15)
+
 
 % figure;
 % subplot(2,2,1)
