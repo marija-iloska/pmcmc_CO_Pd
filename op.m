@@ -18,14 +18,14 @@ T = length(time);
 y = area{t_idx};
 
 % Some priors
-eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
+eps_sat = mean(y(tp_idx - 25 : tp_idx))/cov_sat(t_idx);
 
 % Number of particles
 M = 50;
 
 
 % Noise
-var_A = (std(y(T-10:T)))^2;
+var_A = (std(y(T-10:T)))^2/1000;
 
 
 % Bounds for state theta (coverage)
@@ -40,16 +40,16 @@ P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 3;
-beta4 = 3;
+alpha4 = 2;
+beta4 = 2;
 
 alpha3 = 2;
 beta3 = 2;
 
-alpha2 = 5000;
-beta2 = 0.1;
+alpha2 = 1000;
+beta2 = 5;
 
-alpha1 = 100;
+alpha1 = 500;
 beta1 = 10;
 
 % Propose k4
@@ -80,14 +80,14 @@ x23 = [k2, k3, x2];
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
-tp_AB = [5, 60];
+tp_AB = [5, 50];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 5000;
+J = 300;
 J0 = round(J/2);
 
 tic
@@ -145,7 +145,7 @@ for j = 1:J
 end
 toc
 
-J0 = 3000;
+% J0 = 3000;
 
 theta_est = mean(theta_chain(J0:J,:),1);
 epsilon_est = mean(epsilon_chain(J0:J,:),1);
@@ -211,5 +211,5 @@ subplot(2,2,4)
 hist(x14chain(J0:J,2))
 title('R4 Des', 'FontSize', 15)
  
-save('Data/470.mat')
+% save('Data/490.mat')
 
