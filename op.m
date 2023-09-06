@@ -8,9 +8,8 @@ load expected_coverage.mat
 
 % System specifications
 tp_idx = 45;
-cut_off = 0.33;
-
-t_idx = 3;
+cut_off = 0.30;
+t_idx = 6;
 
 % Data
 time = time_mat_area{t_idx};
@@ -40,17 +39,17 @@ P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 5;
-beta4 = 5;
+alpha4 = 2;
+beta4 = 2;
 
-alpha3 = 1.2;
-beta3 = 2;
+alpha3 = 3;
+beta3 = 3;
 
-alpha2 = 100;
-beta2 = 10;
+alpha2 = 1000;
+beta2 = 5;
 
-alpha1 = 100;
-beta1 = 10;
+alpha1 = 1000;
+beta1 = 5;
 
 % Propose k4
 k4 = betarnd(alpha4, beta4);
@@ -80,14 +79,14 @@ x23 = [k2, k3, x2];
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
-tp_AB = [5, 50];
+tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 3000;
+J = 1000;
 J0 = round(J/2);
 
 tic
@@ -100,7 +99,7 @@ for j = 1:J
     epsilon_chain(j,:) = epsilon_sample;
 
   
-    if (j > 2)
+    if (j > 3)
         tp_AB = find(theta_sample > cut_off);
         tp_AB = [tp_AB(1), tp_AB(end)];
         regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
@@ -211,5 +210,5 @@ subplot(2,2,4)
 hist(x14chain(J0:J,2))
 title('R4 Des', 'FontSize', 15)
  
-save('Data/470test.mat')
+%save('Data/470op.mat')
 

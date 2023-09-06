@@ -9,27 +9,27 @@ k4_old = x_old(2);
 x1_old = x_old(3);
 
 % Get old proposal for a4 q(a4 | alpha4, beta4_old)
-% beta4_old = (1 - k4_old)*alpha4/k4_old;
-% 
-% % Propose sample for k4
-% k4_star = betarnd(alpha4, beta4_old);
+beta4_old = (1 - k4_old)*alpha4/k4_old;
+
+% Propose sample for k4
+k4_star = betarnd(alpha4, beta4_old);
 
 var = 10;
 
 % TRY LOG NORMAL
-mu_old_LN = 2;
-sigma2_old = 2;
-% sigma2_old = log( var*exp(-2/k4_old) + 1) + eps;
-% %sigma2_old = 2;
-% mu_old_LN = 1/k4_old - sigma2_old/2;
-lk4_star = lognrnd(mu_old_LN, sqrt(sigma2_old));
-k4_star = exp(- lk4_star)+eps;
+% mu_old_LN = 2;
+% sigma2_old = 1;
+% % sigma2_old = log( var*exp(-2/k4_old) + 1) + eps;
+% % %sigma2_old = 2;
+% % mu_old_LN = 1/k4_old - sigma2_old/2;
+% lk4_star = lognrnd(mu_old_LN, sqrt(sigma2_old));
+% k4_star = exp(- lk4_star)+eps;
 
 % Compute parameters
-sigma2_star = log( var*exp(-2/k4_star) + 1) + eps;
-%sigma2_star = sigma2_old;
-mu_star_LN = 1/k4_star - sigma2_star/2;
-lk4_old = -log(k4_old);
+% sigma2_star = log( var*exp(-2/k4_star) + 1) + eps;
+% %sigma2_star = sigma2_old;
+% mu_star_LN = 1/k4_star - sigma2_star/2;
+% lk4_old = -log(k4_old);
 
 
 % Propose sample for k1
@@ -43,8 +43,8 @@ k1_star = min([k1_lim, k1_star]);
 
 % Get new porposal parameters
 beta4_star = (1 - k4_star)*alpha4/k4_star;
-% alpha1_star = x1_star^2/var;
-% beta1_star = var/x1_star;
+alpha1_star = x1_star^2/var;
+beta1_star = var/x1_star;
 
 
 % Data
@@ -75,10 +75,10 @@ beta_star = (1-mu_star).*alpha./mu_star;
 beta_old = (1-mu_old).*alpha./mu_old;
 
 % Proposal ratios
-ln_q4 = log(lk4_star/lk4_old) + log(sigma2_old/sigma2_star) + 0.5*( (log(lk4_star) - mu_old_LN)^2/sigma2_old - ...
-    (log(lk4_old) - mu_star_LN)^2/sigma2_star );
+% ln_q4 = log(lk4_star/lk4_old) + log(sigma2_old/sigma2_star) + 0.5*( (log(lk4_star) - mu_old_LN)^2/sigma2_old - ...
+%     (log(lk4_old) - mu_star_LN)^2/sigma2_star );
 
-%ln_q4 = (beta4_star - 1)*log(1 - k4_old) - (beta4_old - 1)*log(1 - k4_star);
+ln_q4 = (beta4_star - 1)*log(1 - k4_old) - (beta4_old - 1)*log(1 - k4_star);
 
 % Log likelihood ratio
 ln_l4 = sum( (beta_star - beta_old).*log(1 - 2*yR4(2:end)));
@@ -103,7 +103,7 @@ ln_l1 = sum((beta_star - beta_old).*(log(1 - 2*yR1(2:end))));
 
 
 % LOG Likelihood ratio
-AR = exp(ln_l1 + ln_l4); % + ln_q4); %+ ln_q1);
+AR = exp(ln_l1 + ln_l4 + ln_q4); %+ ln_q1);
 
 % Correction
 if (isreal(AR) == 0)

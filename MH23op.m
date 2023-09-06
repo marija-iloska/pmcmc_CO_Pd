@@ -13,9 +13,21 @@ x2_old = x_old(3);
 
 % Get old proposal for a4 q(a4 | alpha4, beta4_old)
 beta3_old = (1 - k3_old)*alpha3/k3_old;
-
-% Propose sample for k4
+ 
+ % Propose sample for k4
 k3_star = betarnd(alpha3, beta3_old);
+
+var = 10;
+
+% TRY LOG NORMAL
+% mu_old_LN = 2;
+% sigma2_old = 1;
+% sigma2_old = log( var*exp(-2/k4_old) + 1) + eps;
+% %sigma2_old = 2;
+% mu_old_LN = 1/k4_old - sigma2_old/2;
+% lk3_star = lognrnd(mu_old_LN, sqrt(sigma2_old));
+% k3_star = exp(- lk3_star)+eps;
+
 
 
 % Propose sample for k1
@@ -30,8 +42,8 @@ k2_star = min([k2_lim, k2_star]);
 
 % Get new porposal parameters
 beta3_star = (1 - k3_star)*alpha3/k3_star;
-% alpha2_star = x2_star^2/var;
-% beta2_star = var/x2_star;
+alpha2_star = x2_star^2/var;
+beta2_star = var/x2_star;
 
 
 % Data
