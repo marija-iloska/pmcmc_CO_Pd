@@ -10,7 +10,7 @@ load expected_coverage.mat
 tp_idx = 45;
 cut_off = 0.33;
 
-t_idx = 1;
+t_idx = 3;
 
 % Data
 time = time_mat_area{t_idx};
@@ -21,7 +21,7 @@ y = area{t_idx};
 eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
 
 % Number of particles
-M = 100;
+M = 50;
 
 
 % Noise
@@ -40,14 +40,14 @@ P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 5;
-beta4 = 5;
+alpha4 = 3;
+beta4 = 3;
 
-alpha3 = 4;
-beta3 = 4;
+alpha3 = 2;
+beta3 = 2;
 
-alpha2 = 100;
-beta2 = 5;
+alpha2 = 5000;
+beta2 = 0.1;
 
 alpha1 = 100;
 beta1 = 10;
@@ -63,7 +63,7 @@ k1 = k4*cut_off/(theta_max - cut_off)/P + x1;
 
 % Propose k2
 x2 = gamrnd(alpha1, beta1);
-k2 = k3*cut_off/(theta_max - cut_off)/P + x2;
+k2 = k3*cov_sat(t_idx)/(theta_max - cov_sat(t_idx))/P + x2;
 
 % Prep parameters
 a1 = k1*dt*P;
@@ -100,7 +100,7 @@ for j = 1:J
     epsilon_chain(j,:) = epsilon_sample;
 
   
-    if (j > 3)
+    if (j > 2)
         tp_AB = find(theta_sample > cut_off);
         tp_AB = [tp_AB(1), tp_AB(end)];
         regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
@@ -112,7 +112,7 @@ for j = 1:J
     k4 = x(2);
     x1 = x(3);
     x14 = [k1, k4, x1];
-    xchain14(j,:) = x14;
+    x14chain(j,:) = x14;
 
 
     % Sample Region 2 and 3
@@ -121,7 +121,7 @@ for j = 1:J
     k3 = x(2);
     x2 = x(3);
     x23 = [k2, k3, x2];
-    xchain23(j,:) = x23;
+    x23chain(j,:) = x23;
 
 
     
@@ -145,6 +145,8 @@ for j = 1:J
 end
 toc
 
+J0 = 3000;
+
 theta_est = mean(theta_chain(J0:J,:),1);
 epsilon_est = mean(epsilon_chain(J0:J,:),1);
 
@@ -166,42 +168,48 @@ plot(theta_est, 'k', 'linewidth',2)
 
 
 figure;
-plot(xchain23(:,1), 'linewidth', 1)
+plot(x23chain(1:J,1), 'linewidth', 1)
 title('Regions 2 and 3', 'FontSize', 15)
 
 figure;
-plot(xchain23(:,2), 'linewidth', 1)
+plot(x23chain(1:J,2), 'linewidth', 1)
 title('Regions 2 and 3', 'FontSize', 15)
 
 
 figure;
-plot(xchain14(:,1), 'k', 'linewidth', 1)
+plot(x14chain(1:J,1), 'k', 'linewidth', 1)
 title('Regions 1 and 4', 'FontSize', 15)
 
 figure;
-plot(xchain14(:,2), 'k', 'linewidth', 1)
+plot(x14chain(1:J,2), 'k', 'linewidth', 1)
 title('Regions 1 and 4', 'FontSize', 15)
 
+k4_est = mean(x14chain(J0:J, 2),1);
+k1_est = mean(x14chain(J0:J, 1),1);
 
-% figure;
-% subplot(2,2,1)
-% hist(kOX(:,1))
-% title('R1 Ads', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,2)
-% hist(kOX(:,2))
-% title('R2 Ads', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,3)
-% hist(kXO(:,1))
-% title('R3 Des', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,4)
-% hist(kXO(:,2))
-% title('R4 Des', 'FontSize', 15)
-% 
-% save('450test.mat', 'k_des', 'k_ads')
+k3_est = mean(x23chain(J0:J, 2),1);
+k2_est = mean(x23chain(J0:J, 1),1);
+
+
+figure;
+subplot(2,2,1)
+hist(x23chain(J0:J,1))
+title('R2 Ads', 'FontSize', 15)
+
+
+subplot(2,2,2)
+hist(x23chain(J0:J,2))
+title('R3 Des', 'FontSize', 15)
+
+
+subplot(2,2,3)
+hist(x14chain(J0:J,1))
+title('R1 Ads', 'FontSize', 15)
+
+
+subplot(2,2,4)
+hist(x14chain(J0:J,2))
+title('R4 Des', 'FontSize', 15)
+ 
+save('Data/470.mat')
 

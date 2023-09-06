@@ -21,7 +21,7 @@ y = area{t_idx};
 eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
 
 % Number of particles
-M = 100;
+M = 50;
 
 
 % Noise
@@ -43,14 +43,14 @@ dt = 0.067;
 alpha4 = 3;
 beta4 = 3;
 
-alpha3 = 3;
-beta3 = 3;
+alpha3 = 2;
+beta3 = 2;
 
-alpha2 = 200;
+alpha2 = 5000;
 beta2 = 0.1;
 
-alpha1 = 200;
-beta1 = 0.1;
+alpha1 = 100;
+beta1 = 10;
 
 % Propose k4
 k4 = betarnd(alpha4, beta4);
@@ -63,7 +63,7 @@ k1 = k4*cut_off/(theta_max - cut_off)/P + x1;
 
 % Propose k2
 x2 = gamrnd(alpha1, beta1);
-k2 = k3*cut_off/(theta_max - cut_off)/P + x2;
+k2 = k3*cov_sat(t_idx)/(theta_max - cov_sat(t_idx))/P + x2;
 
 % Prep parameters
 a1 = k1*dt*P;
@@ -71,9 +71,12 @@ a4 = 1 - k4*dt;
 a2 = k2*dt*P;
 a3 = 1 - k3*dt;
 
+% MH inputs
+x14 = [k1, k4, x1];
+x23 = [k2, k3, x2];
 
 
-% Input
+% PF Input
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
@@ -81,9 +84,10 @@ tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 alpha = 5;
+var = 0.01;
 
 % Run GIBBS
-J = 600;
+J = 200;
 J0 = round(J/2);
 
 tic
@@ -96,33 +100,40 @@ for j = 1:J
     epsilon_chain(j,:) = epsilon_sample;
 
   
-    if (j > 3)
+    if (j > 2)
         tp_AB = find(theta_sample > cut_off);
         tp_AB = [tp_AB(1), tp_AB(end)];
         regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
     end
 
     % Sample Region 1 and 4 
-    x = MH14op(theta_sample, regions, x14, bounds, P, dt, var, alpha1, alpha4, beta1, alpha);
+    x = MH14op(theta_sample, regions, x14, bounds, P, dt, var, alpha4, alpha, alpha1, beta1);
     k1 = x(1);
     k4 = x(2);
     x1 = x(3);
     x14 = [k1, k4, x1];
-    xchain14(j,:) = x14;
+    x14chain(j,:) = x14;
 
 
     % Sample Region 2 and 3
-    x = MH23(theta_sample, regions, a23,  bounds, alpha2, alpha3, beta2, alpha, cov_sat(t_idx));
+    x = MH23op(theta_sample, regions, x23,  bounds, P, dt, var, alpha3, alpha, alpha2, beta2, cov_sat(t_idx));
     k2 = x(1);
     k3 = x(2);
     x2 = x(3);
-    x14 = [k1, k4, x1];
-    xchain14(j,:) = x14;
+    x23 = [k2, k3, x2];
+    x23chain(j,:) = x23;
 
 
-    % Concatenate
-    a = [a14(1), a23(1), 0, 0];
-    b = [a14(2), a23(2), a23(2), a14(2)];
+    
+    % Prep parameters
+    a1 = k1*dt*P;
+    a4 = 1 - k4*dt;
+    a2 = k2*dt*P;
+    a3 = 1 - k3*dt;
+
+    % Concatenate for PF Input
+    a = [a1, a2, 0, 0];
+    b = [a4, a3, a3, a4];
 
 
     % Posterior for measurement variance
@@ -136,10 +147,7 @@ toc
 
 theta_est = mean(theta_chain(J0:J,:),1);
 epsilon_est = mean(epsilon_chain(J0:J,:),1);
-% k_des = mean(kXO(J0:J,:),1);
-% k_ads = mean(kOX(J0:J,:),1);
 
-k_des = mean((1 - achain14(J0:J, 2))/0.067,1);
 
 figure;
 plot(time, epsilon_est.*theta_est)
@@ -158,39 +166,48 @@ plot(theta_est, 'k', 'linewidth',2)
 
 
 figure;
-plot(achain23(:,1), 'linewidth', 1)
+plot(x23chain(1:J,1), 'linewidth', 1)
+title('Regions 2 and 3', 'FontSize', 15)
 
 figure;
-plot(achain23(:,2), 'k', 'linewidth', 1)
+plot(x23chain(1:J,2), 'linewidth', 1)
 title('Regions 2 and 3', 'FontSize', 15)
 
 
 figure;
-plot(achain14(:,1), 'linewidth', 1)
-
-figure;
-plot(achain14(:,2), 'k', 'linewidth', 1)
+plot(x14chain(1:J,1), 'k', 'linewidth', 1)
 title('Regions 1 and 4', 'FontSize', 15)
 
-% figure;
-% subplot(2,2,1)
-% hist(kOX(:,1))
-% title('R1 Ads', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,2)
-% hist(kOX(:,2))
-% title('R2 Ads', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,3)
-% hist(kXO(:,1))
-% title('R3 Des', 'FontSize', 15)
-% 
-% 
-% subplot(2,2,4)
-% hist(kXO(:,2))
-% title('R4 Des', 'FontSize', 15)
+figure;
+plot(x14chain(1:J,2), 'k', 'linewidth', 1)
+title('Regions 1 and 4', 'FontSize', 15)
+
+k4_est = mean(x14chain(J0:J, 2),1);
+k1_est = mean(x14chain(J0:J, 1),1);
+
+k3_est = mean(x23chain(J0:J, 2),1);
+k2_est = mean(x23chain(J0:J, 1),1);
+
+
+figure;
+subplot(2,2,1)
+hist(x23chain(J0:J,1))
+title('R2 Ads', 'FontSize', 15)
+
+
+subplot(2,2,2)
+hist(x23chain(J0:J,2))
+title('R3 Des', 'FontSize', 15)
+
+
+subplot(2,2,3)
+hist(x14chain(J0:J,1))
+title('R1 Ads', 'FontSize', 15)
+
+
+subplot(2,2,4)
+hist(x14chain(J0:J,2))
+title('R4 Des', 'FontSize', 15)
 % 
 % save('450test.mat', 'k_des', 'k_ads')
 

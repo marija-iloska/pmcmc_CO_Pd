@@ -16,8 +16,8 @@ k4_star = betarnd(alpha4, beta4_old);
 
 
 % Propose sample for k1
-alpha1_old = x1_old^2/var;
-beta1_old = var/x1_old;
+% alpha1_old = x1_old^2/var;
+% beta1_old = var/x1_old;
 x1_star = gamrnd(alpha1, beta1);
 k1_star = k4_star*cut_off/(M - cut_off)/P + x1_star;
 k1_lim = (M - (1 - k4_star*dt)*cut_off)/(dt*P*(M - cut_off));
@@ -26,8 +26,8 @@ k1_star = min([k1_lim, k1_star]);
 
 % Get new porposal parameters
 beta4_star = (1 - k4_star)*alpha4/k4_star;
-alpha1_star = x1_star^2/var;
-beta1_star = var/x1_star;
+% alpha1_star = x1_star^2/var;
+% beta1_star = var/x1_star;
 
 
 % Data
@@ -77,9 +77,9 @@ beta_old = (1-mu_old).*alpha./mu_old;
 ln_l1 = sum((beta_star - beta_old).*(log(1 - 2*yR1(2:end))));
 
 % Proposal ratios
-ln_q1 = log(gamma(x1_star)/gamma(x1_old)) + alpha1_old*log(beta1_old/x1_star) - alpha1_star*log(beta1_star/x1_old) +...
-    log(x1_star/x1_old) + x1_star/alpha1_old - x1_old/alpha1_star;
-
+% ln_q1 = log(gamma(x1_star)/gamma(x1_old)) + alpha1_old*log(beta1_old/x1_star) - alpha1_star*log(beta1_star/x1_old) +...
+%     log(x1_star/x1_old) + x1_star/alpha1_old - x1_old/alpha1_star;
+% 
 
 
 % LOG Likelihood ratio

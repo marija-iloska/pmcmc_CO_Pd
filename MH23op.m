@@ -19,15 +19,19 @@ k3_star = betarnd(alpha3, beta3_old);
 
 
 % Propose sample for k1
-alpha2_old = x2_old^2/var;
-beta2_old = var/x2_old;
+% alpha2_old = x2_old^2/var;
+% beta2_old = var/x2_old;
 x2_star = gamrnd(alpha2, beta2);
 k2_star = k3_star*cov_sat/(M - cov_sat)/P + x2_star;
+k2_lim = (M - (1 - k3_star*dt)*cov_sat)/(dt*P*(M - cov_sat));
+
+k2_star = min([k2_lim, k2_star]);
+
 
 % Get new porposal parameters
 beta3_star = (1 - k3_star)*alpha3/k3_star;
-alpha2_star = x2_star^2/var;
-beta2_star = var/x2_star;
+% alpha2_star = x2_star^2/var;
+% beta2_star = var/x2_star;
 
 
 % Data
@@ -76,8 +80,8 @@ beta_old = (1-mu_old).*alpha./mu_old;
 ln_l2 = sum((beta_star - beta_old).*(log(1 - 2*yR2(2:end))));
 
 % Proposal ratio
-ln_q2 = log(gamma(x2_star)/gamma(x2_old)) + alpha2_old*log(beta2_old/x2_star) - alpha2_star*log(beta2_star/x2_old) +...
-    log(x2_star/x2_old) + x2_star/alpha2_old - x2_old/alpha2_star;
+% ln_q2 = log(gamma(x2_star)/gamma(x2_old)) + alpha2_old*log(beta2_old/x2_star) - alpha2_star*log(beta2_star/x2_old) +...
+%     log(x2_star/x2_old) + x2_star/alpha2_old - x2_old/alpha2_star;
 
 
 % LOG Likelihood ratio
