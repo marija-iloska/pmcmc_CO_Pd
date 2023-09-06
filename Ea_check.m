@@ -9,7 +9,7 @@ temps_strings(4)=[];
 N = length(temps_strings);
 
 for n = 1 : N
-    str = join(['Data/', temps_strings{n}, '.mat']);
+    str = join(['Data/', temps_strings{n}, 'test.mat']);
     load(str)
     k1_adsorb(n) = k1_est;
     k2_adsorb(n) = k2_est;
@@ -24,7 +24,7 @@ end
 T = [450, 460, 470, 480, 490];
 
 % Which data point to exclude
-idx = setdiff(1:N, [3,4]);
+idx = setdiff(1:N, [3]);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;

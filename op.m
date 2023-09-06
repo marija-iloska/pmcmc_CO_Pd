@@ -25,7 +25,7 @@ M = 50;
 
 
 % Noise
-var_A = (std(y(T-10:T)))^2/1000;
+var_A = (std(y(T-10:T)))^2;
 
 
 % Bounds for state theta (coverage)
@@ -40,16 +40,16 @@ P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 2;
-beta4 = 2;
+alpha4 = 5;
+beta4 = 5;
 
-alpha3 = 2;
+alpha3 = 1.2;
 beta3 = 2;
 
-alpha2 = 1000;
-beta2 = 5;
+alpha2 = 100;
+beta2 = 10;
 
-alpha1 = 500;
+alpha1 = 100;
 beta1 = 10;
 
 % Propose k4
@@ -87,7 +87,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 300;
+J = 3000;
 J0 = round(J/2);
 
 tic
@@ -211,5 +211,5 @@ subplot(2,2,4)
 hist(x14chain(J0:J,2))
 title('R4 Des', 'FontSize', 15)
  
-% save('Data/490.mat')
+save('Data/470test.mat')
 
