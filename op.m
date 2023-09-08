@@ -8,8 +8,8 @@ load expected_coverage.mat
 
 % System specifications
 tp_idx = 45;
-cut_off = 0.32;
-t_idx = 6;
+cut_off = 0.33;
+t_idx = 1;
 
 % Data
 time = time_mat_area{t_idx};
@@ -17,7 +17,7 @@ T = length(time);
 y = area{t_idx};
 
 % Some priors
-eps_sat = mean(y(tp_idx - 25 : tp_idx))/cov_sat(t_idx);
+eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
 
 % Number of particles
 M = 50;
@@ -39,17 +39,17 @@ P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 3;
-beta4 = 3;
+alpha4 = 2;
+beta4 = 2;
 
 alpha3 = 3;
 beta3 = 3;
 
-alpha2 = 500;
-beta2 = 5;
+alpha2 = 100;
+beta2 = 2;
 
-alpha1 = 100;
-beta1 = 5;
+alpha1 = 1000;
+beta1 = 2;
 
 % Propose k4
 k4 = betarnd(alpha4, beta4)/dt;
@@ -62,14 +62,14 @@ x1 = gamrnd(alpha1, beta1);
 k1 = k4*cut_off/(theta_max - cut_off)/P + x1;
 k1_lim = (M - a4*cut_off)/(dt*P*(M - cut_off));
 
-k1_star = min([k1_lim, k1]);
+k1 = min([k1_lim, k1]);
 
 % Propose k2
 x2 = gamrnd(alpha1, beta1);
 k2 = k3*cov_sat(t_idx)/(theta_max - cov_sat(t_idx))/P + x2;
 k2_lim = (M - a3*cov_sat)/(dt*P*(M - cov_sat));
 
-k2_star = min([k2_lim, k2]);
+k2 = min([k2_lim, k2]);
 
 
 
@@ -87,7 +87,7 @@ x23 = [k2, k3, x2];
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
-tp_AB = [5, 50];
+tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 alpha = 5;
@@ -218,5 +218,5 @@ subplot(2,2,4)
 hist(x14chain(J0:J,2))
 title('R4 Des', 'FontSize', 15)
  
-%save('Data/470op.mat')
+save('Data/450fix2.mat')
 

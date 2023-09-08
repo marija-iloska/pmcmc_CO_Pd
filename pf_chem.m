@@ -26,8 +26,8 @@ for t = 2:T
 
 %     % Which region are we in
      mean_eps = {0.5, eps_sat, 0.5, 0.5};
-     %theta_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles
-     theta_mean = {a(r)*(0.5 - theta_particles) + b(r)*theta_particles, cov_sat*ones(1,M), a(r)*(0.5 - theta_particles) + b(r)*theta_particles, a(r)*(0.5 - theta_particles) + b(r)*theta_particles};
+     %theta_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles;
+    theta_mean = {a(r)*(0.5 - theta_particles) + b(r)*theta_particles, cov_sat*ones(1,M), a(r)*(0.5 - theta_particles) + b(r)*theta_particles, a(r)*(0.5 - theta_particles) + b(r)*theta_particles};
 
     % Propose particles
     theta_particles = beta_random(alpha, 2*theta_mean{r})/2;
