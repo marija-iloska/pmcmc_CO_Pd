@@ -3,8 +3,10 @@ close all
 clc
 
 % Particle Metropolis within Gibbs
-load area_ref490.mat
-load expected_coverage.mat
+load Data/area_ref490.mat
+load Data/expected_coverage.mat
+load Data/temps_info.mat
+%load Data/my_areas.mat
 
 % System specifications
 tp_idx = 45;
@@ -13,14 +15,15 @@ t_idx = 1;
 
 % Data
 time = time_mat_area{t_idx};
-T = length(time);
 y = area{t_idx};
+T = length(y);
+str = temps_strings{t_idx};
 
 % Some priors
 eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
 
 % Number of particles
-M = 50;
+M = 60;
 
 
 % Noise
@@ -72,7 +75,6 @@ k2_lim = (M - a3*cov_sat)/(dt*P*(M - cov_sat));
 k2 = min([k2_lim, k2]);
 
 
-
 % Prep parameters
 a1 = k1*dt*P;
 a2 = k2*dt*P;
@@ -94,7 +96,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 2000;
+J = 500;
 J0 = round(J/2);
 
 tic
@@ -109,6 +111,7 @@ for j = 1:J
   
     if (j > 3)
         tp_AB = find(theta_sample > cut_off);
+        %tp_AB = [5, 60];
         tp_AB = [tp_AB(1), tp_AB(end)];
         regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
     end
@@ -159,9 +162,9 @@ epsilon_est = mean(epsilon_chain(J0:J,:),1);
 
 
 figure;
-plot(time, epsilon_est.*theta_est)
+plot(time(1:T), epsilon_est.*theta_est)
 hold on
-plot(time, y)
+plot(time(1:T), y)
 title('Epsilon', 'FontSize', 15)
 
 figure;
@@ -217,6 +220,9 @@ title('R1 Ads', 'FontSize', 15)
 subplot(2,2,4)
 hist(x14chain(J0:J,2))
 title('R4 Des', 'FontSize', 15)
- 
-save('Data/450fix2.mat')
+
+sgtitle(str, 'FontSize', 15)
+
+filename = join(['Results/my', str,'K.mat']);
+% save(filename)
 

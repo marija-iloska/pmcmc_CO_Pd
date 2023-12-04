@@ -10,7 +10,7 @@ load expected_coverage.mat
 tp_idx = 45;
 cut_off = 0.33;
 
-t_idx = 1;
+t_idx = 2;
 
 % Data
 time = time_mat_area{t_idx};

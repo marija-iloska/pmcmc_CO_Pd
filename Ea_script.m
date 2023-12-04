@@ -7,7 +7,7 @@ clc
 %       NON-SCALED POLYFIT FULL RANGE DATA
 %--------------------------------------------------
 
-load Data/temps_info.mat
+%load Data/temps_info.mat
 load Data/cov_time_for_fitting.mat
 sz = 60;
 

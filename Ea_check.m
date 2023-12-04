@@ -3,13 +3,13 @@ clear all
 clc
 
 % RUN Ea
-load temps_info.mat
+load Data/temps_info.mat
 
 % temps_strings(4)=[];
 N = length(temps_strings);
 
 for n = 1 : N
-    str = join(['Data/', temps_strings{n}, 'fix1.mat']);
+    str = join(['Results/', temps_strings{n}, 'fix1.mat']);
     load(str)
     k1_adsorb(n) = k1_est;
     k2_adsorb(n) = k2_est;
