@@ -18,7 +18,7 @@ time_mat_area{1} = time450(1:end-1);
 % System specifications
 tp_idx = 45;
 cut_off = 0.33;
-t_idx = 1;
+t_idx = 3;
 
 % Data
 time = time_mat_area{t_idx};
@@ -27,11 +27,9 @@ T = length(y);
 str = temps_strings{t_idx};
 
 % % Some priors
-eps_sat = mean(y(tp_idx - 20 : tp_idx))/cov_sat(t_idx);
-% eps_exp = 0.25;
-%eps_sat = epsilon_sat(t_idx);
+eps_sat = mean(y(tp_idx - 22 : tp_idx+2))/cov_sat(t_idx);
 eps_exp = epsilon_exp(t_idx);
-%eps_exp = eps_sat;
+
 
 % Number of particles
 M = 60;
@@ -39,6 +37,15 @@ M = 60;
 
 % Noise
 var_A = (std(y(T-10:T)))^2;
+
+mu_E14 = eps_exp;
+mu_E23 = eps_sat;
+var_E14 = 1e-8;
+var_E23 = 1e-8;
+
+e14 = eps_exp;
+e23 = eps_sat;
+
 
 
 % Bounds for state theta (coverage)
@@ -107,7 +114,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 5000;
+J = 10000;
 J0 = round(J/2);
 
 tic
@@ -115,16 +122,15 @@ for j = 1:J
 
 
     % SAMPLE entire PF
-    [theta_sample, epsilon_sample] = pf_chem(y, sys_specs, bounds, a, b, M, tp_AB, alpha);
+    [theta_sample] = pf_chem_E(y, sys_specs, bounds, a, b, M, tp_AB, alpha);
     theta_chain(j,:) = theta_sample;
-    epsilon_chain(j,:) = epsilon_sample;
 
   
     if (j > 3)
         tp_AB = find(theta_sample > cut_off);
         %tp_AB = [5, 60];
         tp_AB = [tp_AB(1), tp_AB(end)];
-        regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
+        regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx : tp_AB(2), tp_AB(2):T};
     end
 
     % Sample Region 1 and 4 
@@ -158,8 +164,27 @@ for j = 1:J
 
 
     % Posterior for measurement variance
-    beta_A = 1./var_A + 0.5*sum( (y' - theta_sample.*epsilon_sample).^2 );
+    e1_sample = e14*ones(1,length(regions{1}));
+    e4_sample = e14*ones(1,length(regions{4}));
+    e2_sample = e23*ones(1,length(regions{2}));
+    e3_sample = e23*ones(1,length(regions{3}));
+
+    epsilon_sample = [e1_sample, e2_sample, e3_sample, e4_sample(1:end-1)];
+    epsilon_sample =epsilon_sample(1:length(theta_sample));
+    beta_A = 1./var_A + 0.5*sum( (y' - theta_sample.*epsilon_sample').^2 );
     var_a(j) = 1./gamrnd(1, beta_A);
+
+    % Sample epsilons
+    e14 = sample_epsilon(y([regions{1}, regions{4}]), theta_sample([regions{1}, regions{4}])', var_a(j), var_E14, mu_E14);
+    e23 = sample_epsilon(y([regions{2}, regions{3}]), theta_sample([regions{2}, regions{3}])', var_a(j), var_E23, mu_E23);
+    
+    eps_sat = e23;
+    eps_exp = e14;
+
+    epsilon_chain(j,:) = epsilon_sample;
+
+    eps12(j,:) = [e14, e23];
+
     sys_specs = {var_a(j), eps_sat, cov_sat(t_idx), eps_exp};
      
 
@@ -187,6 +212,11 @@ plot(theta_chain(J,:))
 hold on
 plot(theta_est, 'k', 'linewidth',2)
 
+
+figure;
+plot(eps12(:,1), 'r', 'LineWidth',1)
+hold on
+plot(eps12(:,2), 'b', 'LineWidth',1)
 
 figure;
 plot(x23chain(1:J,1), 'linewidth', 1)
@@ -234,6 +264,6 @@ title('R4 Des', 'FontSize', 15)
 
 sgtitle(str, 'FontSize', 15)
 
-filename = join(['Results/', str,'K.mat']);
+filename = join(['Results/eps_', str,'K_J10000.mat']);
 save(filename)
 

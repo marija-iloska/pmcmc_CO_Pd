@@ -25,7 +25,7 @@ for t = 2:T
 
 
 %     % Which region are we in
-     mean_eps = {eps_exp, eps_sat, eps_exp, eps_exp};
+     mean_eps = {eps_exp, eps_sat, eps_sat, eps_exp};
      %theta_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles;
     theta_mean = {a(r)*(0.5 - theta_particles) + b(r)*theta_particles, cov_sat*ones(1,M), a(r)*(0.5 - theta_particles) + b(r)*theta_particles, a(r)*(0.5 - theta_particles) + b(r)*theta_particles};
 
