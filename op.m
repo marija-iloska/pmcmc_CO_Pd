@@ -3,10 +3,17 @@ close all
 clc
 
 % Particle Metropolis within Gibbs
+load Data/450new_area.mat
+area450 = area{1};
+
 load Data/area_ref490.mat
 load Data/expected_coverage.mat
 load Data/temps_info.mat
-%load Data/my_areas.mat
+load Data/my_areas.mat
+load Data/my_epsilon_exp.mat
+
+area_mat{1} = area450;
+time_mat_area{1} = time450(1:end-1);
 
 % System specifications
 tp_idx = 45;
@@ -15,12 +22,16 @@ t_idx = 1;
 
 % Data
 time = time_mat_area{t_idx};
-y = area{t_idx};
+y = area_mat{t_idx};
 T = length(y);
 str = temps_strings{t_idx};
 
-% Some priors
-eps_sat = mean(y(tp_idx - 30 : tp_idx))/cov_sat(t_idx);
+% % Some priors
+eps_sat = mean(y(tp_idx - 20 : tp_idx))/cov_sat(t_idx);
+% eps_exp = 0.25;
+%eps_sat = epsilon_sat(t_idx);
+eps_exp = epsilon_exp(t_idx);
+%eps_exp = eps_sat;
 
 % Number of particles
 M = 60;
@@ -36,26 +47,26 @@ theta_min = 0;
 
 
 % System specifications
-sys_specs = {var_A, eps_sat, cov_sat(t_idx)};
+sys_specs = {var_A, eps_sat, cov_sat(t_idx), eps_exp};
 bounds = {tp_idx, cut_off, theta_max, theta_min};
 P = 0.001;
 dt = 0.067;
 
 % METROPOLIS HASTINGS
-alpha4 = 2;
-beta4 = 2;
+alpha4 = 3;
+beta4 = 3;
 
 alpha3 = 3;
 beta3 = 3;
 
-alpha2 = 100;
+alpha2 = 1000;
 beta2 = 2;
 
 alpha1 = 1000;
 beta1 = 2;
 
 % Propose k4
-k4 = betarnd(alpha4, beta4)/dt;
+k4 = betarnd(alpha4, beta4);
 k3 = betarnd(alpha3, beta3)/dt;
 a4 = 1 - k4*dt;
 a3 = 1 - k3*dt;
@@ -96,7 +107,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 500;
+J = 5000;
 J0 = round(J/2);
 
 tic
@@ -149,7 +160,7 @@ for j = 1:J
     % Posterior for measurement variance
     beta_A = 1./var_A + 0.5*sum( (y' - theta_sample.*epsilon_sample).^2 );
     var_a(j) = 1./gamrnd(1, beta_A);
-    sys_specs = {var_a(j), eps_sat, cov_sat(t_idx)};
+    sys_specs = {var_a(j), eps_sat, cov_sat(t_idx), eps_exp};
      
 
 end
@@ -223,6 +234,6 @@ title('R4 Des', 'FontSize', 15)
 
 sgtitle(str, 'FontSize', 15)
 
-filename = join(['Results/my', str,'K.mat']);
-% save(filename)
+filename = join(['Results/', str,'K.mat']);
+save(filename)
 

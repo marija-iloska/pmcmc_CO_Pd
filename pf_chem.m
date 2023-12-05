@@ -2,7 +2,7 @@ function [theta_sample, epsilon_sample] = pf_chem(y, sys_specs, bounds, a, b, M,
 
 
 % Variances
-[var_A, eps_sat, cov_sat] = sys_specs{:};
+[var_A, eps_sat, cov_sat, eps_exp] = sys_specs{:};
 [tp_idx, cut_off, theta_max, theta_min] = bounds{:};
 
 r = 1;
@@ -25,7 +25,7 @@ for t = 2:T
 
 
 %     % Which region are we in
-     mean_eps = {0.5, eps_sat, 0.5, 0.5};
+     mean_eps = {eps_exp, eps_sat, eps_exp, eps_exp};
      %theta_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles;
     theta_mean = {a(r)*(0.5 - theta_particles) + b(r)*theta_particles, cov_sat*ones(1,M), a(r)*(0.5 - theta_particles) + b(r)*theta_particles, a(r)*(0.5 - theta_particles) + b(r)*theta_particles};
 
