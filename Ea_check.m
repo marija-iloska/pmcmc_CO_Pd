@@ -4,12 +4,13 @@ clc
 
 % RUN Ea
 load Data/temps_info.mat
+load Data/colors.mat
 
 % temps_strings(4)=[];
 N = length(temps_strings);
 
 for n = 1 : N
-    str = join(['Results/eps_', temps_strings{n}, 'K_J10000.mat']);
+    str = join(['Results/', temps_strings{n}, 'K_J10000.mat']);
     load(str)
 
     k1_adsorb(n) = k1_est;
@@ -77,51 +78,126 @@ lnkk = {lnkk1, lnkk2, lnkk3, lnkk4};
 figure;
 subplot(2,2,1)
 hist(Ea1)
-title('Ea1')
+hold on
+xline(0.5, 'Color', 'r', 'linewidth',3)
+hold on
+xline(1.5, 'Color', 'r', 'linewidth',3)
+hold on
+scatter(Ea_mean(1), 0, 70, 'g', 'filled')
+title('E_1', 'FontSize', 15)
 
 subplot(2,2,2)
 hist(Ea2)
-title('Ea2')
+hold on
+scatter(Ea_mean(2), 0, 70, 'g', 'filled')
+title('E_2', 'FontSize', 15)
 
 subplot(2,2,3)
 hist(Ea3)
-title('Ea3')
+hold on
+scatter(Ea_mean(3), 0, 70, 'g', 'filled')
+title('E_3', 'FontSize', 15)
 
 subplot(2,2,4)
 hist(Ea4)
-title('Ea4')
+hold on
+xline(24, 'Color', 'r', 'linewidth',3)
+hold on
+xline(36, 'Color', 'r', 'linewidth',3)
+scatter(Ea_mean(4), 0, 70, 'g', 'filled')
+title('E_4', 'FontSize', 15)
+
+
+
+
+% A   PREEXP FACTOR
+figure;
+subplot(2,2,1)
+hist(ln_A1)
+hold on
+scatter(lnA_mean(1), 0, 70, 'g', 'filled')
+title('ln(A_1)', 'FontSize', 15)
+
+subplot(2,2,2)
+hist(ln_A2)
+hold on
+scatter(lnA_mean(2), 0, 70, 'g', 'filled')
+title('ln(A_2)', 'FontSize', 15)
+
+subplot(2,2,3)
+hist(ln_A3)
+hold on
+scatter(lnA_mean(3), 0, 70, 'g', 'filled')
+title('ln(A_3)', 'FontSize', 15)
+
+subplot(2,2,4)
+hist(ln_A4)
+hold on
+xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
+scatter(lnA_mean(4), 0, 70, 'g', 'filled')
+title('ln(A_4)', 'FontSize', 15)
+
+
+
 
 
 
 figure;
 subplot(2,2,1)
-scatter(1./T(idx), lnkk1(idx), 'filled')
-hold on
-plot(1./T(idx), ln_kk1(idx))
+scatter(1./T(idx), lnkk1(idx), 'k','filled')
+hold on 
+plot(1./T(idx), ln_kk1(idx),'Color',  col{4}, 'linewidth',2)
+title('Adsorption k_1', 'FontSize', 15)
+ylim([7,9])
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
 
 subplot(2,2,2)
-scatter(1./T(idx), lnkk2(idx), 'filled')
+scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
 hold on
-plot(1./T(idx), ln_kk2(idx))
+plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
+title('Adsorption k_2', 'FontSize', 15)
+ylim([7,9])
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
 
 subplot(2,2,3)
-scatter(1./T(idx), lnkk3(idx), 'filled')
+scatter(1./T(idx), lnkk3(idx), 'k', 'filled')
 hold on
-plot(1./T(idx), ln_kk3(idx))
+plot(1./T(idx), ln_kk3(idx), 'Color', col{1}, 'LineWidth', 2)
+title('Desorption k_3', 'FontSize', 15)
+ylim([-8,2])
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
 
 subplot(2,2,4)
-scatter(1./T(idx), lnkk4(idx), 'filled')
+scatter(1./T(idx), lnkk4(idx),  'k','filled')
 hold on
-plot(1./T(idx), ln_kk4(idx))
+plot(1./T(idx), ln_kk4(idx), 'Color', col{1}, 'LineWidth', 2)
+title('Desorption k_4', 'FontSize', 15)
+ylim([-8,2])
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
+
+
 
 
 
 
 figure;
 for n = 2:N
-    plot(time_mat_area{n}(1:length(theta{n})), theta{n}, 'linewidth',1)
+    plot(time_mat_area{n}(1:length(theta{n})), theta{n}, 'linewidth',1.5, 'Color', col{n-1})
     hold on
 end
+xlabel('Time [s]','FontSize', 15)
+ylabel('Covereage [ML]', 'FontSize', 15)
+legend(temps_strings{2:end}, 'FontSize', 15)
+title('Inferred Latent States', 'FontSize', 15)
+grid on
 
 
 %save('eps_J10000_Ea.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )

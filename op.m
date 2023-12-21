@@ -18,7 +18,7 @@ time_mat_area{1} = time450(1:end-1);
 % System specifications
 tp_idx = 45;
 cut_off = 0.33;
-t_idx = 3;
+t_idx = 2;
 
 % Data
 time = time_mat_area{t_idx};
@@ -114,7 +114,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 10000;
+J = 1000;
 J0 = round(J/2);
 
 tic
@@ -219,13 +219,21 @@ hold on
 plot(eps12(:,2), 'b', 'LineWidth',1)
 
 figure;
-plot(x23chain(1:J,1), 'linewidth', 1)
-title('Regions 2 and 3', 'FontSize', 15)
+subplot(2,2,1)
+plot(x14chain(1:J,1), 'Color',col{1}, 'linewidth', 1)
+title('Adsorption k_1', 'FontSize', 15)
 
-figure;
-plot(x23chain(1:J,2), 'linewidth', 1)
-title('Regions 2 and 3', 'FontSize', 15)
+subplot(2,2,2)
+plot(x14chain(1:J,2), 'Color',col{1},'linewidth', 1)
+title('Desorption k_4', 'FontSize', 15)
 
+subplot(2,2,3)
+plot(x23chain(1:J,1), 'k', 'linewidth', 1)
+title('Adsorption k_2 ', 'FontSize', 15)
+
+subplot(2,2,4)
+plot(x23chain(1:J,2), 'k', 'linewidth', 1)
+title('Desorption k_3 ', 'FontSize', 15)
 
 figure;
 plot(x14chain(1:J,1), 'k', 'linewidth', 1)
@@ -264,6 +272,6 @@ title('R4 Des', 'FontSize', 15)
 
 sgtitle(str, 'FontSize', 15)
 
-filename = join(['Results/eps_', str,'K_J10000.mat']);
-save(filename)
+% filename = join(['Results/eps_', str,'K_J10000.mat']);
+% save(filename)
 
