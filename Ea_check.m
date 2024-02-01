@@ -9,8 +9,8 @@ load Data/colors.mat
 % temps_strings(4)=[];
 N = length(temps_strings);
 
-for n = 1 : N
-    str = join(['Results/', temps_strings{n}, 'K_J10000.mat']);
+for n = 2 : N
+    str = join(['Results/new_', temps_strings{n}, 'K_J1000.mat']);
     load(str)
 
     k1_adsorb(n) = k1_est;
@@ -36,11 +36,11 @@ end
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
-J0 = 7000;
+J0 = 150;
 clear Ea1 Ea2 Ea3 Ea4
 
 % Which data point to exclude
-idx = setdiff(1:N, [1]);
+idx = setdiff(1:N, [1,6]);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
