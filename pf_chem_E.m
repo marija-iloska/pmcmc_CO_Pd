@@ -20,8 +20,10 @@ theta_est(1) = mean(theta_particles);
 for t = 2:T
 
      % Which region are we in
-    mean_eps = {eps_sat, eps_sat, eps_sat, eps_exp};
-    theta_mean = {a(r)*(0.5 - theta_particles) + b(r)*theta_particles, cov_sat*ones(1,M), a(r)*(0.5 - theta_particles) + b(r)*theta_particles, a(r)*(0.5 - theta_particles) + b(r)*theta_particles};
+    mean_eps = {eps_exp, eps_sat, eps_sat, eps_exp};
+    temp_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles; 
+    mean_min = min(temp_mean, cov_sat*ones(1,M));
+    theta_mean = {temp_mean, mean_min, mean_min, temp_mean};
 
     % Propose particles
     theta_particles = beta_random(alpha, 2*theta_mean{r})/2;

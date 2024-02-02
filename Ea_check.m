@@ -9,8 +9,8 @@ load Data/colors.mat
 % temps_strings(4)=[];
 N = length(temps_strings);
 
-for n = 2 : N
-    str = join(['Results/new_', temps_strings{n}, 'K_J1000.mat']);
+for n = 1 : N
+    str = join(['Results/noise_', temps_strings{n}, 'K_J1000.mat']);
     load(str)
 
     k1_adsorb(n) = k1_est;
@@ -36,17 +36,17 @@ end
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
-J0 = 150;
+J0 = 500;
 clear Ea1 Ea2 Ea3 Ea4
 
 % Which data point to exclude
-idx = setdiff(1:N, [1,6]);
+idx = setdiff(1:N, [1]);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
 
-for j = 1:(J-J0-1)
+parfor j = 1:(J-J0-1)
     [Ea4(j), ln_A4(j), ln_k4(idx,j)] = get_Ea(kk4(idx,J0+j), T(idx), R);
     [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = get_Ea(kk3(idx,J0+j), T(idx), R);
     
@@ -74,7 +74,7 @@ ln_kk = {ln_kk1, ln_kk2, ln_kk3, ln_kk4};
 lnkk = {lnkk1, lnkk2, lnkk3, lnkk4};
 
 
-
+%% PLOTS
 figure;
 subplot(2,2,1)
 hist(Ea1)
@@ -178,7 +178,7 @@ scatter(1./T(idx), lnkk4(idx),  'k','filled')
 hold on
 plot(1./T(idx), ln_kk4(idx), 'Color', col{1}, 'LineWidth', 2)
 title('Desorption k_4', 'FontSize', 15)
-ylim([-8,2])
+ylim([-10,0])
 xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
@@ -189,13 +189,13 @@ box on
 
 
 figure;
-for n = 2:N
-    plot(time_mat_area{n}(1:length(theta{n})), theta{n}, 'linewidth',1.5, 'Color', col{n-1})
+for n = 1:N
+    plot(time_area{n}(1:length(theta{n})), movmean(theta{n}, 2), 'linewidth',1.5, 'Color', col{n})
     hold on
 end
 xlabel('Time [s]','FontSize', 15)
 ylabel('Covereage [ML]', 'FontSize', 15)
-legend(temps_strings{2:end}, 'FontSize', 15)
+legend(temps_strings{1:end}, 'FontSize', 15)
 title('Inferred Latent States', 'FontSize', 15)
 grid on
 

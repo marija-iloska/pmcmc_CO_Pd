@@ -3,26 +3,21 @@ close all
 clc
 
 % Particle Metropolis within Gibbs
-load Data/450new_area.mat
-area450 = area{1};
-
 load Data/area_ref490.mat
 load Data/expected_coverage.mat
+load Data/epsilons490.mat
 load Data/temps_info.mat
-load Data/my_areas.mat
-load Data/my_epsilon_exp.mat
+load Data\colors.mat
 
-area_mat{1} = area450;
-time_mat_area{1} = time450(1:end-1);
 
 % System specifications
 tp_idx = 45;
 cut_off = 0.33;
-t_idx = 2;
+t_idx = 6;
 
 % Data
-time = time_mat_area{t_idx};
-y = area_mat{t_idx};
+time = time_area{t_idx};
+y = area{t_idx}';
 T = length(y);
 str = temps_strings{t_idx};
 
@@ -36,12 +31,12 @@ M = 60;
 
 
 % Noise
-var_A = (std(y(T-10:T)))^2;
+var_A = (std(y(T-5:T)))^2;
 
 mu_E14 = eps_exp;
 mu_E23 = eps_sat;
-var_E14 = 1e-8;
-var_E23 = 1e-8;
+var_E14 = 0.5e-5;
+var_E23 = 0.5e-6;
 
 e14 = eps_exp;
 e23 = eps_sat;
@@ -114,7 +109,7 @@ alpha = 5;
 var = 0.01;
 
 % Run GIBBS
-J = 1000;
+J = 5000;
 J0 = round(J/2);
 
 tic
@@ -191,7 +186,6 @@ for j = 1:J
 end
 toc
 
-% J0 = 3000;
 
 theta_est = mean(theta_chain(J0:J,:),1);
 epsilon_est = mean(epsilon_chain(J0:J,:),1);
@@ -235,13 +229,6 @@ subplot(2,2,4)
 plot(x23chain(1:J,2), 'k', 'linewidth', 1)
 title('Desorption k_3 ', 'FontSize', 15)
 
-figure;
-plot(x14chain(1:J,1), 'k', 'linewidth', 1)
-title('Regions 1 and 4', 'FontSize', 15)
-
-figure;
-plot(x14chain(1:J,2), 'k', 'linewidth', 1)
-title('Regions 1 and 4', 'FontSize', 15)
 
 k4_est = mean(x14chain(J0:J, 2),1);
 k1_est = mean(x14chain(J0:J, 1),1);
@@ -272,6 +259,6 @@ title('R4 Des', 'FontSize', 15)
 
 sgtitle(str, 'FontSize', 15)
 
-% filename = join(['Results/eps_', str,'K_J10000.mat']);
-% save(filename)
+filename = join(['Results/noise_', str,'K_J5000.mat']);
+save(filename)
 
