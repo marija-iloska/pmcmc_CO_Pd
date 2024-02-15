@@ -25,6 +25,8 @@ str = temps_strings{t_idx};
 eps_sat = mean(y(tp_idx - 22 : tp_idx+2))/cov_sat(t_idx);
 eps_exp = epsilon_exp(t_idx);
 
+w = (y./ max(y));
+epsilon = w.*eps_sat + (1-w).*epsilon_exp;
 
 % Number of particles
 M = 60;

@@ -2,7 +2,9 @@ function [theta_sample] = pf_chem_E(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
 
 
 % Variances
-[var_A, eps_sat, cov_sat, eps_exp] = sys_specs{:};
+%[var_A, eps_sat, cov_sat, eps_exp] = sys_specs{:};
+[var_A, epsilon, cov_sat] = sys_specs{:};
+
 [tp_idx, cut_off, ~, ~] = bounds{:};
 
 r = 1;
@@ -20,7 +22,7 @@ theta_est(1) = mean(theta_particles);
 for t = 2:T
 
      % Which region are we in
-    mean_eps = {eps_exp, eps_sat, eps_sat, eps_exp};
+    mean_eps = epsilon(t);
     temp_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles; 
     mean_min = min(temp_mean, cov_sat*ones(1,M));
     theta_mean = {temp_mean, mean_min, mean_min, temp_mean};
@@ -34,7 +36,7 @@ for t = 2:T
 
 
     % Compute epsilon weights
-    [w_cov, theta_est(t), theta_particles] = compute_weights_E(y(t), mean_eps{r}, theta_particles, var_A, M);
+    [w_cov, theta_est(t), theta_particles] = compute_weights_E(y(t), mean_eps, theta_particles, var_A, M);
 
     % Store samples
     theta_store(t,:) = theta_particles;

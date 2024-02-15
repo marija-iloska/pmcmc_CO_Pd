@@ -9,8 +9,8 @@ load Data/colors.mat
 % temps_strings(4)=[];
 N = length(temps_strings);
 
-for n = 1 : N
-    str = join(['Results/noise_', temps_strings{n}, 'K_J1000.mat']);
+for n = 1 : 4
+    str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
     load(str)
 
     k1_adsorb(n) = k1_est;
@@ -36,11 +36,11 @@ end
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
-J0 = 500;
+J0 = 2000;
 clear Ea1 Ea2 Ea3 Ea4
 
 % Which data point to exclude
-idx = setdiff(1:N, [1]);
+idx = setdiff(1:N, []);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
@@ -79,24 +79,25 @@ figure;
 subplot(2,2,1)
 hist(Ea1)
 hold on
-xline(0.5, 'Color', 'r', 'linewidth',3)
-hold on
-xline(1.5, 'Color', 'r', 'linewidth',3)
+xline(0, 'Color', 'r', 'linewidth',3)
 hold on
 scatter(Ea_mean(1), 0, 70, 'g', 'filled')
-title('E_1', 'FontSize', 15)
+set(gca, 'fontsize',13)
+title('Ea_1', 'FontSize', 15)
 
 subplot(2,2,2)
 hist(Ea2)
 hold on
 scatter(Ea_mean(2), 0, 70, 'g', 'filled')
-title('E_2', 'FontSize', 15)
+set(gca, 'fontsize',13)
+title('Ea_2', 'FontSize', 15)
 
 subplot(2,2,3)
 hist(Ea3)
 hold on
 scatter(Ea_mean(3), 0, 70, 'g', 'filled')
-title('E_3', 'FontSize', 15)
+set(gca, 'fontsize',13)
+title('Ea_3', 'FontSize', 15)
 
 subplot(2,2,4)
 hist(Ea4)
@@ -105,7 +106,8 @@ xline(24, 'Color', 'r', 'linewidth',3)
 hold on
 xline(36, 'Color', 'r', 'linewidth',3)
 scatter(Ea_mean(4), 0, 70, 'g', 'filled')
-title('E_4', 'FontSize', 15)
+set(gca, 'fontsize',13)
+title('Ea_4', 'FontSize', 15)
 
 
 
@@ -116,18 +118,21 @@ subplot(2,2,1)
 hist(ln_A1)
 hold on
 scatter(lnA_mean(1), 0, 70, 'g', 'filled')
+set(gca, 'fontsize',13)
 title('ln(A_1)', 'FontSize', 15)
 
 subplot(2,2,2)
 hist(ln_A2)
 hold on
 scatter(lnA_mean(2), 0, 70, 'g', 'filled')
+set(gca, 'fontsize',13)
 title('ln(A_2)', 'FontSize', 15)
 
 subplot(2,2,3)
 hist(ln_A3)
 hold on
 scatter(lnA_mean(3), 0, 70, 'g', 'filled')
+set(gca, 'fontsize',13)
 title('ln(A_3)', 'FontSize', 15)
 
 subplot(2,2,4)
@@ -135,6 +140,7 @@ hist(ln_A4)
 hold on
 xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
 scatter(lnA_mean(4), 0, 70, 'g', 'filled')
+set(gca, 'fontsize',13)
 title('ln(A_4)', 'FontSize', 15)
 
 
@@ -148,7 +154,8 @@ scatter(1./T(idx), lnkk1(idx), 'k','filled')
 hold on 
 plot(1./T(idx), ln_kk1(idx),'Color',  col{4}, 'linewidth',2)
 title('Adsorption k_1', 'FontSize', 15)
-ylim([7,9])
+ylim([9.2,9.25])
+set(gca, 'fontsize',13)
 xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
@@ -158,7 +165,8 @@ scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
 hold on
 plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
 title('Adsorption k_2', 'FontSize', 15)
-ylim([7,9])
+ylim([9.2,9.45])
+set(gca, 'fontsize',13)
 xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
@@ -168,7 +176,8 @@ scatter(1./T(idx), lnkk3(idx), 'k', 'filled')
 hold on
 plot(1./T(idx), ln_kk3(idx), 'Color', col{1}, 'LineWidth', 2)
 title('Desorption k_3', 'FontSize', 15)
-ylim([-8,2])
+ylim([-6,1])
+set(gca, 'fontsize',13)
 xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
@@ -179,6 +188,7 @@ hold on
 plot(1./T(idx), ln_kk4(idx), 'Color', col{1}, 'LineWidth', 2)
 title('Desorption k_4', 'FontSize', 15)
 ylim([-10,0])
+set(gca, 'fontsize',13)
 xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
@@ -186,18 +196,46 @@ box on
 
 
 
-
-
 figure;
 for n = 1:N
-    plot(time_area{n}(1:length(theta{n})), movmean(theta{n}, 2), 'linewidth',1.5, 'Color', col{n})
+    plot(time_area{n}(1:length(theta{n})),theta{n}, 'linewidth',2, 'Color', col{n})
     hold on
 end
 xlabel('Time [s]','FontSize', 15)
 ylabel('Covereage [ML]', 'FontSize', 15)
+set(gca, 'fontsize',13)
 legend(temps_strings{1:end}, 'FontSize', 15)
 title('Inferred Latent States', 'FontSize', 15)
 grid on
+
+
+figure;
+subplot(2,2,1)
+plot(x14chain(1:J,1), 'Color',col{1}, 'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Adsorption k_1', 'FontSize', 15)
+xlim([0,7000])
+
+subplot(2,2,4)
+plot(x14chain(1:J,2), 'Color',col{1},'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Desorption k_4', 'FontSize', 15)
+ylim([0,0.06])
+xlim([0,7000])
+
+subplot(2,2,2)
+plot(x23chain(1:J,1), 'k', 'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Adsorption k_2 ', 'FontSize', 15)
+xlim([0,7000])
+
+subplot(2,2,3)
+plot(x23chain(1:J,2), 'k', 'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Desorption k_3 ', 'FontSize', 15)
+ylim([0,1])
+xlim([0,7000])
+
 
 
 %save('eps_J10000_Ea.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )
