@@ -18,8 +18,8 @@ load Data/colors.mat
 
 % System specifications
 tp_idx = 45;        % Time index when P is set to 0
-cut_off = 0.27;     % Coverage at which we expect phase transition
-t_idx = 3;          % Temperature index to choose
+cut_off = 0.27;     % Coverage around which we expect phase transition
+t_idx = 6;          % Temperature index to choose
 
 
 % Data Notation
@@ -51,11 +51,11 @@ dt = 0.067;
 
 
 % Prior Noise: Sample deviation of final points
-sigma_Achain = (std(y(T-5:T)))/5;
+sigma_A = (std(y(T-5:T)))/5;
 
 % System specifications
-sys_specs = {sigma_Achain, epsilon, cov_sat(t_idx)};
-bounds = {tp_idx, cut_off, theta_max, theta_min};
+sys_specs = {sigma_A, epsilon, cov_sat(t_idx)};
+bounds = {tp_idx, cut_off, cov_sat(t_idx), theta_max, theta_min};
 
 
 % METROPOLIS HASTINGS (MH) ==================================================
@@ -90,13 +90,13 @@ a3 = 1 - k3*dt;
 % Propose k1
 x1 = gamrnd(alpha1, beta1);
 k1 = k4*cut_off/(theta_max - cut_off)/P + x1;
-k1_lim = (M - a4*cut_off)/(dt*P*(M - cut_off));
+k1_lim = (theta_max - a4*cut_off)/(dt*P*(theta_max - cut_off));
 k1 = min([k1_lim, k1]);
 
 % Propose k2
 x2 = gamrnd(alpha1, beta1);
 k2 = k3*cov_sat(t_idx)/(theta_max - cov_sat(t_idx))/P + x2;
-k2_lim = (M - a3*cov_sat)/(dt*P*(M - cov_sat));
+k2_lim = (theta_max - a3*cov_sat)/(dt*P*(theta_max - cov_sat));
 k2 = min([k2_lim, k2]);
 
 
@@ -118,16 +118,16 @@ b = [a4, a3, a3, a4];
 tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
-
+% Prior param for sampling theta
 alpha_theta = 5;
 
 % SAMPLER SETTINGS
 
 % Number of Gibbs iterations and burn-in
-I = 7000;
+I = 200;
 I0 = round(I/2);
 
-% Number of particles to use
+% Number of particles
 M = 40;
 
 % Initialize arrays
@@ -144,7 +144,7 @@ for i = 1:I
 
 
     % SAMPLE entire PF --------------------------------------------------------
-    [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, tp_AB, alpha_theta);
+    [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, alpha_theta);
     theta_chain(i,:) = theta_sample;
 
     % Update region indices
@@ -153,7 +153,7 @@ for i = 1:I
     regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx : tp_AB(2), tp_AB(2):T};
 
     % Sample Region 1 and 4 ------------------------------------------------------------------
-    x = MH14op(theta_sample, regions, x14, bounds, P, dt, alpha4, alpha_theta, alpha1, beta1);
+    x = MH14(theta_sample, regions, x14, bounds, P, dt, alpha4, alpha_theta, alpha1, beta1);
     k1 = x(1);
     k4 = x(2);
     x1 = x(3);
@@ -162,7 +162,7 @@ for i = 1:I
 
 
     % Sample Region 2 and 3 -----------------------------------------------------------------------------------
-    x = MH23op(theta_sample, regions, x23,  bounds, P, dt, alpha3, alpha_theta, alpha2, beta2, cov_sat(t_idx));
+    x = MH23(theta_sample, regions, x23,  bounds, P, dt, alpha3, alpha_theta, alpha2, beta2);
     k2 = x(1);
     k3 = x(2);
     x2 = x(3);
@@ -182,27 +182,40 @@ for i = 1:I
 
 
     % Sample noise sigma -------------------------------------------------
-    beta_A = 1./sigma_Achain + 0.5*sum( (y - theta_sample.*epsilon).^2 );
-    sigma_Achain(i) = 1./gamrnd(1, beta_A);
+    beta_A = 1./sigma_A + 0.5*sum( (y - theta_sample.*epsilon).^2 );
+    var_a = 1./gamrnd(1, beta_A);
+    sigma_Achain(i) = var_a;
 
     % Update input parameters
-    sys_specs{1} = sigma_Achain(i);
+    sys_specs{1} = var_a;
      
 
 end
 toc
 
-% Get theta estimate
+% Get estimates
 theta_est = mean(theta_chain(I0:I,:),1);
 
+k4_est = mean(x14chain(I0:I, 2),1);
+k1_est = mean(x14chain(I0:I, 1),1);
+
+k3_est = mean(x23chain(I0:I, 2),1);
+k2_est = mean(x23chain(I0:I, 1),1);
+
+
+%% Visualize Data Fitting and Chain convergence
 
 figure;
+% Area vs Estimated Area
 subplot(3,1,1)
-plot(time(1:T), epsilon.*theta_est')
+plot(time(1:T), y, 'LineStyle','--', 'LineWidth',1)
 hold on
-plot(time(1:T), y)
+plot(time(1:T), epsilon.*theta_est', 'LineStyle','-', 'LineWidth',1)
 title('Epsilon * Theta', 'FontSize', 15)
+legend('Data Area', 'Estimated Area', 'FontSize',12)
 
+
+% Chains of the Coverage and Estimate
 subplot(3,1,2)
 plot(theta_chain(1,:))
 hold on
@@ -211,11 +224,22 @@ hold on
 plot(theta_chain(I,:))
 hold on
 plot(theta_est, 'k', 'linewidth',2)
+xlabel('Time', 'FontSize',12)
+xlabel('Coverage', 'FontSize',12)
+legend('1st Sample', 'I_0th Sample', 'Final Sample', 'Final Estimate', 'FontSize',12)
 
+
+% Chain of the noise
 subplot(3,1,3)
-plot(sigma_Achain)
+plot(sigma_Achain, 'k', 'linewidth',2)
+xlabel('Iterations', 'FontSize',12)
+ylabel('Noise', 'FontSize',12)
+
+%% k PARAMETER CHAINS
 
 figure;
+
+% Region I and IV
 subplot(2,2,1)
 plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
 title('Adsorption k_1', 'FontSize', 15)
@@ -225,6 +249,7 @@ plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
 title('Desorption k_4', 'FontSize', 15)
 ylim([0,0.1])
 
+% Region II and III
 subplot(2,2,3)
 plot(x23chain(1:I,1), 'k', 'linewidth', 1)
 title('Adsorption k_2 ', 'FontSize', 15)
@@ -234,36 +259,34 @@ plot(x23chain(1:I,2), 'k', 'linewidth', 1)
 title('Desorption k_3 ', 'FontSize', 15)
 ylim([0,1.5])
 
-k4_est = mean(x14chain(I0:I, 2),1);
-k1_est = mean(x14chain(I0:I, 1),1);
 
-k3_est = mean(x23chain(I0:I, 2),1);
-k2_est = mean(x23chain(I0:I, 1),1);
-
+%% k PARAMETER HISTOGRAMS
 
 figure;
+
+% Region II and III
 subplot(2,2,1)
 hist(x23chain(I0:I,1))
 title('R2 Ads', 'FontSize', 15)
-
 
 subplot(2,2,2)
 hist(x23chain(I0:I,2))
 title('R3 Des', 'FontSize', 15)
 
-
+% Region I and IV
 subplot(2,2,3)
 hist(x14chain(I0:I,1))
 title('R1 Ads', 'FontSize', 15)
-
 
 subplot(2,2,4)
 hist(x14chain(I0:I,2))
 title('R4 Des', 'FontSize', 15)
 
-
 sgtitle(str, 'FontSize', 15)
 
-filename = join(['Results/my_noise', str,'K_J5000.mat']);
-save(filename)
+%% SAVE RESULTS
+
+% str_iter = num2str(I);
+% filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
+% save(filename)
 
