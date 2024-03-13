@@ -1,12 +1,11 @@
-function [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
+function [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, alpha)
 
 
-% Variances
-%[var_A, eps_sat, cov_sat, eps_exp] = sys_specs{:};
+% Extract settings and constraints
 [var_A, epsilon, cov_sat] = sys_specs{:};
+[tp_idx, cut_off, ~, ~, ~] = bounds{:};
 
-[tp_idx, cut_off, ~, ~] = bounds{:};
-
+% Start with Region I
 r = 1;
 
 % Length of data
@@ -14,16 +13,20 @@ T = length(y);
 
 % Initialize particles
 theta_particles = beta_random(alpha, 2*0.1*ones(1,M))/2;
+theta_store = zeros(T,M);
 
 % Get first estimates
+theta_est = zeros(T,1);
 theta_est(1) = mean(theta_particles);
 
 
+% Start Filter
 for t = 2:T
 
-     % Which region are we in
-    mean_eps = epsilon(t);
-    temp_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles; 
+    % Which region are we in
+    temp_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles;
+
+    % Constrain from overflow
     mean_min = min(temp_mean, cov_sat*ones(1,M));
     theta_mean = {temp_mean, mean_min, mean_min, temp_mean};
 
@@ -31,12 +34,11 @@ for t = 2:T
     theta_particles = beta_random(alpha, 2*theta_mean{r})/2;
 
     if (isnan(theta_particles))
-        disp('stop')
+        disp('Theta was sampled outside of bounds. Try again.')
     end
 
-
     % Compute epsilon weights
-    [w_cov, theta_est(t), theta_particles] = compute_weights(y(t), mean_eps, theta_particles, var_A, M);
+    [w_cov, theta_est(t), theta_particles] = compute_weights(y(t), epsilon(t), theta_particles, var_A, M);
 
     % Store samples
     theta_store(t,:) = theta_particles;
