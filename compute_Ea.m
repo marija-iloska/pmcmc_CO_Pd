@@ -1,5 +1,7 @@
-function [Ea, ln_A, ln_k] = get_Ea(k, T, R)
+function [Ea, ln_A, ln_k] = compute_Ea(k, T, R)
 
+
+% Activation energy - Ea
 % The units of Ea depend on the units of the R value entered
 
 % Arrhenious equation
