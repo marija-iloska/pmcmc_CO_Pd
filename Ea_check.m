@@ -9,7 +9,8 @@ load Data/colors.mat
 % temps_strings(4)=[];
 N = length(temps_strings);
 
-for n = 1 : 4
+
+for n = 1 : N
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
     load(str)
 
@@ -25,6 +26,11 @@ for n = 1 : 4
     kk2(n,:) = x23chain(:,1);
     kk3(n,:) = x23chain(:,2);
     kk4(n,:) = x14chain(:,2);
+
+    if n==2
+        k2chain = x23chain(:,1);
+        k4chain = x14chain(:,2);  
+    end
 
 end
 
@@ -75,6 +81,8 @@ lnkk = {lnkk1, lnkk2, lnkk3, lnkk4};
 
 
 %% PLOTS
+
+% ACTIVATION ENERGY HISTOGRAMS
 figure;
 subplot(2,2,1)
 hist(Ea1)
@@ -112,7 +120,7 @@ title('Ea_4', 'FontSize', 15)
 
 
 
-% A   PREEXP FACTOR
+% A  PREEXP FACTOR HISTOGRAMS
 figure;
 subplot(2,2,1)
 hist(ln_A1)
@@ -145,9 +153,7 @@ title('ln(A_4)', 'FontSize', 15)
 
 
 
-
-
-
+% Arrhenius Plots
 figure;
 subplot(2,2,1)
 scatter(1./T(idx), lnkk1(idx), 'k','filled')
@@ -194,8 +200,7 @@ ylabel('ln(k)', 'FontSize', 15)
 box on
 
 
-
-
+% COVERAGES
 figure;
 for n = 1:N
     plot(time_area{n}(1:length(theta{n})),theta{n}, 'linewidth',2, 'Color', col{n})
@@ -209,6 +214,8 @@ title('Inferred Latent States', 'FontSize', 15)
 grid on
 
 
+
+% MARKOV CHAINS
 figure;
 subplot(2,2,1)
 plot(x14chain(1:J,1), 'Color',col{1}, 'linewidth', 1)
@@ -235,6 +242,49 @@ set(gca, 'fontsize',13)
 title('Desorption k_3 ', 'FontSize', 15)
 ylim([0,1])
 xlim([0,7000])
+
+
+%% MIX figure
+
+figure;
+subplot(2,2,1)
+plot(k2chain(1:J), 'k', 'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Adsorption k_2 ', 'FontSize', 15)
+ylabel('Samples', 'FontSize', 15)
+xlabel('Iterations', 'FontSize', 15)
+xlim([0,7000])
+
+subplot(2,2,2)
+plot(k4chain(1:J), 'Color',col{1},'linewidth', 1)
+set(gca, 'fontsize',13)
+title('Desorption k_4', 'FontSize', 15)
+ylabel('Samples', 'FontSize', 15)
+xlabel('Iterations', 'FontSize', 15)
+ylim([0,0.03])
+xlim([0,7000])
+
+subplot(2,2,3)
+scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
+hold on
+plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
+title('Adsorption k_2', 'FontSize', 15)
+ylim([9.1,9.6])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
+
+subplot(2,2,4)
+scatter(1./T(idx), lnkk4(idx),  'k','filled')
+hold on
+plot(1./T(idx), ln_kk4(idx), 'Color', col{1}, 'LineWidth', 2)
+title('Desorption k_4', 'FontSize', 15)
+ylim([-10,-1])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
 
 
 
