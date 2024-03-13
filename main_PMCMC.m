@@ -58,7 +58,7 @@ sys_specs = {sigma_A, epsilon, cov_sat(t_idx)};
 bounds = {tp_idx, cut_off, cov_sat(t_idx), theta_max, theta_min};
 
 
-% METROPOLIS HASTINGS (MH) ==================================================
+% METROPOLIS HASTINGS (MH) ================================================
 
 % Gamma Priors
 
