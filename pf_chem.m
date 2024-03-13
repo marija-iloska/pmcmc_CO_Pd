@@ -1,4 +1,4 @@
-function [theta_sample] = pf_chem_E(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
+function [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
 
 
 % Variances
@@ -36,7 +36,7 @@ for t = 2:T
 
 
     % Compute epsilon weights
-    [w_cov, theta_est(t), theta_particles] = compute_weights_E(y(t), mean_eps, theta_particles, var_A, M);
+    [w_cov, theta_est(t), theta_particles] = compute_weights(y(t), mean_eps, theta_particles, var_A, M);
 
     % Store samples
     theta_store(t,:) = theta_particles;

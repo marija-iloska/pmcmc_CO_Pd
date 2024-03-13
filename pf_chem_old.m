@@ -1,4 +1,4 @@
-function [theta_sample, epsilon_sample] = pf_chem(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
+function [theta_sample, epsilon_sample] = pf_chem_old(y, sys_specs, bounds, a, b, M, tp_AB, alpha)
 
 
 % Variances
