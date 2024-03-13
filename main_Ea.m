@@ -6,14 +6,17 @@ clc
 load Data/temps_info.mat
 load Data/colors.mat
 
-% temps_strings(4)=[];
+% Number of Temperature datasets
 N = length(temps_strings);
 
-
+% Extract sampled parameters for each temperature
 for n = 1 : N
+
+    % Create filename and load data
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
     load(str)
 
+    % Store Estimates
     k1_adsorb(n) = k1_est;
     k2_adsorb(n) = k2_est;
 
@@ -22,11 +25,13 @@ for n = 1 : N
 
     theta{n} = theta_est;
 
+    % Store chains
     kk1(n,:) = x14chain(:,1);
     kk2(n,:) = x23chain(:,1);
     kk3(n,:) = x23chain(:,2);
     kk4(n,:) = x14chain(:,2);
 
+    % Only For plotting
     if n==2
         k2chain = x23chain(:,1);
         k4chain = x14chain(:,2);  
@@ -37,22 +42,22 @@ end
 
 
 
-%% Plot
+%% PLOTS
 
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
-J0 = 2000;
-clear Ea1 Ea2 Ea3 Ea4
+% Burn-in
+I0 = 2000;
 
-% Which data point to exclude
+% In case we want to exclude a tempereature
 idx = setdiff(1:N, []);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
-
-parfor j = 1:(J-J0-1)
+% Compute Ea samples for each region using k samples (after burn-in)
+parfor j = 1:(I-I0-1)
     [Ea4(j), ln_A4(j), ln_k4(idx,j)] = get_Ea(kk4(idx,J0+j), T(idx), R);
     [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = get_Ea(kk3(idx,J0+j), T(idx), R);
     
@@ -60,11 +65,12 @@ parfor j = 1:(J-J0-1)
     [Ea1(j), ln_A1(j),  ln_k1(idx,j)] = get_Ea(kk1(idx,J0+j), T(idx), R);
 end
 
+% Compute mean estimates
 Ea_mean = mean([Ea1; Ea2; Ea3; Ea4],2)
 lnA_mean = mean([ln_A1; ln_A2; ln_A3; ln_A4],2)
-Ea = {Ea1, Ea2, Ea3, Ea4};
-ln_A = {ln_A1, ln_A2, ln_A3, ln_A4};
 
+
+% Log fitting and estimates for plotting
 ln_kk1 = mean(ln_k1, 2);
 ln_kk2 = mean(ln_k2, 2);
 ln_kk3 = mean(ln_k3, 2);
@@ -75,14 +81,16 @@ lnkk2 = mean(log(kk2), 2);
 lnkk3 = mean(log(kk3), 2);
 lnkk4 = mean(log(kk4), 2);
 
-kk = {kk1, kk2, kk3, kk4};
-ln_kk = {ln_kk1, ln_kk2, ln_kk3, ln_kk4};
-lnkk = {lnkk1, lnkk2, lnkk3, lnkk4};
+
+% Store chains
+% Ea = {Ea1, Ea2, Ea3, Ea4};
+% ln_A = {ln_A1, ln_A2, ln_A3, ln_A4};
+% ln_kk = {ln_kk1, ln_kk2, ln_kk3, ln_kk4};
 
 
-%% PLOTS
+% PLOTS ==================================================================
 
-% ACTIVATION ENERGY HISTOGRAMS
+%% ACTIVATION ENERGY HISTOGRAMS 
 figure;
 subplot(2,2,1)
 hist(Ea1)
@@ -119,8 +127,7 @@ title('Ea_4', 'FontSize', 15)
 
 
 
-
-% A  PREEXP FACTOR HISTOGRAMS
+%% A  PREEXP FACTOR HISTOGRAMS 
 figure;
 subplot(2,2,1)
 hist(ln_A1)
@@ -152,8 +159,7 @@ set(gca, 'fontsize',13)
 title('ln(A_4)', 'FontSize', 15)
 
 
-
-% Arrhenius Plots
+%% ARRHENIUS PLOTS
 figure;
 subplot(2,2,1)
 scatter(1./T(idx), lnkk1(idx), 'k','filled')
@@ -200,7 +206,7 @@ ylabel('ln(k)', 'FontSize', 15)
 box on
 
 
-% COVERAGES
+%% ALL COVERAGE RESULTS
 figure;
 for n = 1:N
     plot(time_area{n}(1:length(theta{n})),theta{n}, 'linewidth',2, 'Color', col{n})
@@ -215,7 +221,7 @@ grid on
 
 
 
-% MARKOV CHAINS
+%% MARKOV CHAINS 
 figure;
 subplot(2,2,1)
 plot(x14chain(1:J,1), 'Color',col{1}, 'linewidth', 1)
@@ -244,7 +250,7 @@ ylim([0,1])
 xlim([0,7000])
 
 
-%% MIX figure
+%% MIX figure for paper
 
 figure;
 subplot(2,2,1)
@@ -286,6 +292,5 @@ xlabel('1/T [K^-^1]', 'FontSize', 15)
 ylabel('ln(k)', 'FontSize', 15)
 box on
 
-
-
-%save('eps_J10000_Ea.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )
+%% SAVE RESULTS
+%save('Ea_res.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )
