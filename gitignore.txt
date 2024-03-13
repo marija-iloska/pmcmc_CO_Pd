@@ -34,6 +34,7 @@ octave-workspace
 *.DS_Store
 
 # Do not share Data or Results
-Data/
-Results/
+DATA/
+RESULTS/
+FIGS/
 
