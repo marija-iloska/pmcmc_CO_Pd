@@ -10,7 +10,7 @@ load Data/colors.mat
 N = length(temps_strings);
 
 % Extract sampled parameters for each temperature
-for n = 1 : N
+for n = 1 : N-1
 
     % Create filename and load data
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
@@ -27,71 +27,103 @@ for n = 1 : N
 end
 
 % Temperatures
-T = [450, 460, 470, 475, 480, 490];
+T = [450, 460, 470, 475, 480]; %, 490];
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
-%% REGION IV
+
+
+k1 = k1_adsorb;
+k2 = k2_adsorb;
+k3 = k3_desorb;
+k4 = k4_desorb;
+
+
+
+
+
+%% EXP PRIOR Ea
 clc
-alpha = 3;
+x = 1./(R*T);
+N_samples = 10000;
+lambda = 100;
+
+
+y = {log(k1), log(k2), -log(k3), -log(k4)};
+
+figure;
+for n = 1:4
+    lambda_post = 1/( 1/lambda + sum(x.*log(y{n}))) ;
+    mu = 1/lambda_post;
+    Ea{n} = exprnd(mu, 1,N_samples);
+    subplot(2,2,n)
+    hist(Ea{n})
+    hold on
+    scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
+    str = join(['Ea_', num2str(n)]);
+    title(str, 'FontSize',17)
+    if n==4
+        hold on
+        xline(24, 'Color', 'r', 'linewidth',3)
+        hold on
+        xline(36, 'Color', 'r', 'linewidth',3)
+    end
+    if n==1
+        hold on
+        xline(0, 'Color', 'r', 'linewidth',3)
+    end
+end
+sgtitle('Exponential Prior')
+
+%% GAMMA prior Ea
+alpha = [2,2,0.1,0.1];
 beta_a = 100;
 x = -1./(R*T);
 
-N_samples = 1000;
-
-
-beta_post = ((1 - beta_a*sum(x.*log(-log(k4_desorb))))/beta_a); 
-
-for i = 1:N_samples
-    Ea4(i) = gamrnd(alpha, beta_post);
-end
-
 figure;
-subplot(2,2,4)
-hist(Ea4)
-title('Region 4')
-mean(Ea4)
-
-
-
-% REGION III
-beta_post = ((1 - beta_a*sum(x.*log(-log(k3_desorb))))/beta_a); 
-
-for i = 1:N_samples
-    Ea3(i) = gamrnd(alpha, beta_post);
+for n = 1:4
+    beta_post = ((1 - beta_a*sum(x.*log(y{n})))/beta_a); 
+    Ea{n} = gamrnd(alpha(n), beta_post, 1, N_samples);
+    subplot(2,2,n)
+    hist(Ea{n})
+    hold on
+    scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
+    str = join(['Ea_', num2str(n)]);
+    title(str, 'FontSize',17)
+    if n==4
+        hold on
+        xline(24, 'Color', 'r', 'linewidth',3)
+        hold on
+        xline(36, 'Color', 'r', 'linewidth',3)
+    end
+    if n==1
+        hold on
+        xline(0, 'Color', 'r', 'linewidth',3)
+    end
 end
+sgtitle('Gamma Prior')
 
-subplot(2,2,3)
-hist(Ea3)
-title('Region 3')
-mean(Ea3)
-
-
-alpha = alpha*0.1;
-
-
-% REGION II
-beta_post = ((1 - beta_a*sum(x.*log(log(k2_adsorb))))/beta_a); 
-
-for i = 1:N_samples
-    Ea2(i) = gamrnd(alpha, beta_post);
+%% PRE EXP FACTOR
+figure;
+for n = 1:4
+    lambda_post = 1/( 1/lambda + sum(log(y{n}))) ;
+    mu = 1/lambda_post;
+    lnA{n} = exprnd(mu, 1,N_samples);
+    subplot(2,2,n)
+    hist(lnA{n})
+    hold on
+    scatter(mean(lnA{n}), 0, 70, 'g', 'filled')
+    str = join(['ln(A_', num2str(n),')']);
+    title(str, 'FontSize',17)
+    if n == 4
+        hold on
+        xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
+    end
 end
-
-subplot(2,2,2)
-hist(Ea2)
-title('Region 2')
-mean(Ea2)
+sgtitle('Exponential Prior')
 
 
 
-% REGION I
-beta_post = ((1 - beta_a*sum(x.*log(log(k1_adsorb))))/beta_a); 
-for i = 1:N_samples
-    Ea1(i) = gamrnd(alpha, beta_post);
-end
 
-subplot(2,2,1)
-hist(Ea1)
-title('Region 1')
-mean(Ea1)
+
