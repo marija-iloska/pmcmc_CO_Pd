@@ -15,7 +15,7 @@ From the sampler, we directly infer: <br/>
 $\theta$ - Time series of the coverage of CO on Pd(111) - interpreted as the hidden states in a State-Space Model. <br/> 
 $k_1, k_2$ - Adosrption constants in Region 1 and 2. <br/> 
 $k_3, k_4$ - Desorption constants in Region 3 and 4. <br/> 
-$sigma_A$ - Observation Noise of the system. <br/> 
+$\sigma_A$ - Observation Noise of the system. <br/> 
 
 Indirectly from the sampler:
 $Ea_1, Ea_2, Ea_3, Ea_4$ - Activation energies in each region. <br/> 
