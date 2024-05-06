@@ -32,33 +32,37 @@ load Data/colors.mat
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
+tidx = setdiff(1:N, []);
+
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
 Regions = 4;
 
-x = 1./(R*T);
+x = 1./(R*T(tidx));
 N_samples = 2000;
-mu = 10;
+mu = [100, 100, 0.001, 0.001];
 I0 = length(idx);
 
 % Prior to the power I0-1
-mu0 = mu/(I0-1);
+mu0 = mu./(I0-1);
 
 % Local pos
 for i = 1:I0
 
-    y = {log(kk1(:,i)), log(kk2(:,i)), -log(kk3(:,i)), -log(kk4(:,i))};
+    y = {log(kk1(tidx,i)), log(kk2(tidx,i)), -log(kk3(tidx,i)), -log(kk4(tidx,i))};
     for r = 1:Regions
-        temp = real(1/mu + sum((x'.*log(y{r}))));
-        mu_local(r,i) = 1./temp;
+%         temp = real(1/mu + sum((x'.*log(y{r}))));
+%         mu_local(r,i) = 1./temp;
+          lambda_local =  real(1./(log(R) - sum(log(y{r}./T(tidx)')) ));
+          mu_local(r,i) = 1./lambda_local;
     end
 end
 
 % Fused posterior
 for r = 1:Regions
-    temp = - 1/mu0 + sum(1./mu_local(r,:)/N^2);
-    mu_f(r) = N/temp;
+    temp = sum(1./mu_local(r,:))/I0;
+    mu_f(r) = mu0(r) + 1./temp;
 end
 
 
