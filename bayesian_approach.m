@@ -16,7 +16,7 @@ for n = 1 : N
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
     load(str)
     J0 = 2000;
-    idx = J0:2:J;
+    idx = J0:4:J;
     % Store chains
     kk1(n,:) = x14chain(idx,1);
     kk2(n,:) = x23chain(idx,1);
@@ -44,6 +44,61 @@ N_samples = 2000;
 mu = [100, 100, 0.001, 0.001];
 I0 = length(idx);
 
+
+
+% Set negative for R12
+y = log(kk4);
+
+% Priors 
+lambda_Ea = 50;
+lambda_lnA = 10;
+
+
+
+
+
+for i = 1:I0
+
+    % Sample from prior
+    M = 30;
+    Ea = exprnd(lambda_Ea, 1,M);
+    lnA = exprnd(lambda_lnA, 1,M);
+
+
+    % Reusable likelihood terms
+    term1 = sum(y(:,i),1);
+    term1 = sum(term1);
+    term2 = prod(y(:,i), 1);
+    term3 = sum(y(:,i)./T')/R;
+
+
+    term2 = lnA*log(term2);
+    term3 = -Ea*log(-term3);
+
+    logL = term1 + term3 + term2;
+
+
+    % Weights
+    log_w = logL;
+    w = exp(log_w - max(log_w));
+
+    % Final posterior
+    Ea4_mean(i) = sum(w.*Ea);
+    lnA4_mean(i) = sum(w.*lnA);
+
+end
+
+
+
+% Evaluate
+w = fused_likelihood_weights(term1, term2, term3, Ea, lnA, lambda_Ea, lambda_lnA, I0);
+
+
+
+
+
+
+
 % Prior to the power I0-1
 mu0 = mu./(I0-1);
 
@@ -64,6 +119,12 @@ for r = 1:Regions
     temp = sum(1./mu_local(r,:))/I0;
     mu_f(r) = mu0(r) + 1./temp;
 end
+
+
+
+
+
+
 
 
 for r = 1:Regions
