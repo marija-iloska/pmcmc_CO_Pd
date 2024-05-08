@@ -22,6 +22,7 @@ for n = 1 : N
 
     k3_desorb(n) = k3_est;
     k4_desorb(n) = k4_est;
+    
 
 
 end
@@ -44,40 +45,40 @@ k4 = k4_desorb;
 
 
 %% EXP PRIOR Ea
-clc
-x = 1./(R*T);
-N_samples = 10000;
-lambda = [1000, 1000, 0.1, 0.1];
+% clc
+% x = 1./(R*T);
+% N_samples = 10000;
+% lambda = [1000, 1000, 0.1, 0.1];
+% 
+% 
+% y = {log(k1), log(k2), -log(k3), -log(k4)};
+% 
+% figure;
+% for n = 1:4
+%     lambda_post = 1./( 1./lambda(n) + log(R) - sum(log(y{n}./T)) );
+%     mu = 1/lambda_post;
+%     Ea{n} = exprnd(mu, 1,N_samples);
+%     subplot(2,2,n)
+%     hist(Ea{n})
+%     hold on
+%     scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
+%     str = join(['Ea_', num2str(n)]);
+%     title(str, 'FontSize',17)
+%     if n==4
+%         hold on
+%         xline(24, 'Color', 'r', 'linewidth',3)
+%         hold on
+%         xline(36, 'Color', 'r', 'linewidth',3)
+%     end
+%     if n==1
+%         hold on
+%         xline(0, 'Color', 'r', 'linewidth',3)
+%     end
+%     mean(Ea{n})
+% end
+% sgtitle('Exponential Prior')
 
-
-y = {log(k1), log(k2), -log(k3), -log(k4)};
-
-figure;
-for n = 1:4
-    lambda_post = 1./( 1./lambda(n) + log(R) - sum(log(y{n}./T)) );
-    mu = 1/lambda_post;
-    Ea{n} = exprnd(mu, 1,N_samples);
-    subplot(2,2,n)
-    hist(Ea{n})
-    hold on
-    scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
-    str = join(['Ea_', num2str(n)]);
-    title(str, 'FontSize',17)
-    if n==4
-        hold on
-        xline(24, 'Color', 'r', 'linewidth',3)
-        hold on
-        xline(36, 'Color', 'r', 'linewidth',3)
-    end
-    if n==1
-        hold on
-        xline(0, 'Color', 'r', 'linewidth',3)
-    end
-    mean(Ea{n})
-end
-sgtitle('Exponential Prior')
-
-%% GAMMA prior Ea
+%% OLD GAMMA prior Ea
 % alpha = [2,2,0.1,0.1];
 % beta_a = 100;
 % x = -1./(R*T);
@@ -126,5 +127,35 @@ sgtitle('Exponential Prior')
 % 
 % 
 
+% %% NEW GAMMA
+% alpha = 200;
+% beta0 = 1;
+% x = 1./(R*T);
+% N_samples = 1000;
+% 
+% y = {log(k1), log(k2), -log(k3), -log(k4)};
+% 
+% figure;
+% for n = 3
+%     beta_post = 1/( 1/beta0 + sum(x.*log(y{n})) ); 
+%     Ea{n} = gamrnd(alpha, beta_post, 1, N_samples);
+%     subplot(2,2,n)
+%     hist(Ea{n})
+%     hold on
+%     scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
+%     str = join(['Ea_', num2str(n)]);
+%     title(str, 'FontSize',17)
+%     if n==4
+%         hold on
+%         xline(24, 'Color', 'r', 'linewidth',3)
+%         hold on
+%         xline(36, 'Color', 'r', 'linewidth',3)
+%     end
+%     if n==1
+%         hold on
+%         xline(0, 'Color', 'r', 'linewidth',3)
+%     end
+% end
+% sgtitle('Gamma Prior')
 
 

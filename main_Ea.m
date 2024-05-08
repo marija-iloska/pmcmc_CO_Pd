@@ -14,6 +14,7 @@ for n = 1 : N
 
     % Create filename and load data
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
+    %str = join(['RESULTS/pmcmc_', temps_strings{n},'K_I3000', '.mat']);
     load(str)
 
     % Store Estimates
@@ -39,7 +40,7 @@ for n = 1 : N
 
 end
 
-
+I = J;
 
 
 %% PLOTS
@@ -48,21 +49,21 @@ end
 T = [450, 460, 470, 475, 480, 490];
 
 % Burn-in
-I0 = 2000;
+I0 = 1000;
 
 % In case we want to exclude a tempereature
-idx = setdiff(1:N, []);
+idx = setdiff(1:N, [4]);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
 % Compute Ea samples for each region using k samples (after burn-in)
 parfor j = 1:(I-I0-1)
-    [Ea4(j), ln_A4(j), ln_k4(idx,j)] = get_Ea(kk4(idx,J0+j), T(idx), R);
-    [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = get_Ea(kk3(idx,J0+j), T(idx), R);
+    [Ea4(j), ln_A4(j), ln_k4(idx,j)] = compute_Ea(kk4(idx,I0+j), T(idx), R);
+    [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = compute_Ea(kk3(idx,I0+j), T(idx), R);
     
-    [Ea2(j), ln_A2(j),  ln_k2(idx,j)] = get_Ea(kk2(idx,J0+j), T(idx), R);
-    [Ea1(j), ln_A1(j),  ln_k1(idx,j)] = get_Ea(kk1(idx,J0+j), T(idx), R);
+    [Ea2(j), ln_A2(j),  ln_k2(idx,j)] = compute_Ea(kk2(idx,I0+j), T(idx), R);
+    [Ea1(j), ln_A1(j),  ln_k1(idx,j)] = compute_Ea(kk1(idx,I0+j), T(idx), R);
 end
 
 % Compute mean estimates
@@ -224,51 +225,51 @@ grid on
 %% MARKOV CHAINS 
 figure;
 subplot(2,2,1)
-plot(x14chain(1:J,1), 'Color',col{1}, 'linewidth', 1)
+plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Adsorption k_1', 'FontSize', 15)
-xlim([0,7000])
+xlim([0,I])
 
 subplot(2,2,4)
-plot(x14chain(1:J,2), 'Color',col{1},'linewidth', 1)
+plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Desorption k_4', 'FontSize', 15)
 ylim([0,0.06])
-xlim([0,7000])
+xlim([0,I])
 
 subplot(2,2,2)
-plot(x23chain(1:J,1), 'k', 'linewidth', 1)
+plot(x23chain(1:I,1), 'k', 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Adsorption k_2 ', 'FontSize', 15)
-xlim([0,7000])
+xlim([0,I])
 
 subplot(2,2,3)
-plot(x23chain(1:J,2), 'k', 'linewidth', 1)
+plot(x23chain(1:I,2), 'k', 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Desorption k_3 ', 'FontSize', 15)
 ylim([0,1])
-xlim([0,7000])
+xlim([0,I])
 
 
 %% MIX figure for paper
 
 figure;
 subplot(2,2,1)
-plot(k2chain(1:J), 'k', 'linewidth', 1)
+plot(k2chain(1:I), 'k', 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Adsorption k_2 ', 'FontSize', 15)
 ylabel('Samples', 'FontSize', 15)
 xlabel('Iterations', 'FontSize', 15)
-xlim([0,7000])
+xlim([0,I])
 
 subplot(2,2,2)
-plot(k4chain(1:J), 'Color',col{1},'linewidth', 1)
+plot(k4chain(1:I), 'Color',col{1},'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Desorption k_4', 'FontSize', 15)
 ylabel('Samples', 'FontSize', 15)
 xlabel('Iterations', 'FontSize', 15)
 ylim([0,0.03])
-xlim([0,7000])
+xlim([0,I])
 
 subplot(2,2,3)
 scatter(1./T(idx), lnkk2(idx), 'k', 'filled')

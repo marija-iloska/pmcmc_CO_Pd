@@ -27,8 +27,10 @@ for t = 2:T
     temp_mean = a(r)*(0.5 - theta_particles) + b(r)*theta_particles;
 
     % Constrain from overflow
-    mean_min = min(temp_mean, cov_sat*ones(1,M));
-    theta_mean = {temp_mean, mean_min, mean_min, temp_mean};
+    meanR23 = min(temp_mean, cov_sat*ones(1,M));
+    meanR14 = min(temp_mean, cut_off*ones(1,M));
+
+    theta_mean = {meanR14, meanR23, meanR23, meanR14};
 
     % Propose particles
     theta_particles = beta_random(alpha, 2*theta_mean{r})/2;

@@ -19,7 +19,7 @@ load Data/colors.mat
 % System specifications
 tp_idx = 45;        % Time index when P is set to 0
 cut_off = 0.27;     % Coverage around which we expect phase transition
-t_idx = 6;          % Temperature index to choose
+t_idx = 1;          % Temperature index to choose
 
 
 % Data Notation
@@ -51,7 +51,7 @@ dt = 0.067;
 
 
 % Prior Noise: Sample deviation of final points
-sigma_A = (std(y(T-5:T)))/5;
+sigma_A = (std(y(T-5:T)))/10;
 
 % System specifications
 sys_specs = {sigma_A, epsilon, cov_sat(t_idx)};
@@ -66,14 +66,14 @@ bounds = {tp_idx, cut_off, cov_sat(t_idx), theta_max, theta_min};
 alpha1 = 500;
 beta1 = 20;
 
-alpha4 = 2;
+alpha4 = 5;
 beta4 = 2;
 
 % Regions 2 and 3
 alpha2 = 500;
 beta2 = 20;
 
-alpha3 = 2;
+alpha3 = 5;
 beta3 = 2;
 
 
@@ -124,7 +124,7 @@ alpha_theta = 5;
 % SAMPLER SETTINGS
 
 % Number of Gibbs iterations and burn-in
-I = 200;
+I = 3000;
 I0 = round(I/2);
 
 % Number of particles
@@ -286,7 +286,7 @@ sgtitle(str, 'FontSize', 15)
 
 %% SAVE RESULTS
 
-% str_iter = num2str(I);
-% filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
-% save(filename)
+str_iter = num2str(I);
+filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
+save(filename)
 
