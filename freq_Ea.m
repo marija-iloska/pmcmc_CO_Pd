@@ -49,10 +49,10 @@ I = J;
 T = [450, 460, 470, 475, 480, 490];
 
 % Burn-in
-I0 = 1000;
+I0 = 2000;
 
 % In case we want to exclude a tempereature
-idx = setdiff(1:N, [4]);
+idx = setdiff(1:N, []);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
@@ -98,10 +98,10 @@ lnkk4 = mean(log(kk4), 2);
 figure;
 for n = 1:4
     subplot(2,2,n)
-    h = histogram(Ea_store{n})
-    h.FaceColor = [0,0,0.75];
+    h = histogram(Ea_store{n});
+    h.FaceColor = [0, 0.35, 0.65];
     h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 0.85;
+    h.FaceAlpha = 1;
     hold on
     scatter(mean(Ea_store{n}), 0, 110, 'g', 'filled')
     str = join(['Ea_', num2str(n)]);
@@ -121,10 +121,10 @@ end
 figure;
 for n = 1:4
     subplot(2,2,n)
-    h = histogram(lnA_store{n})
-    h.FaceColor = [0,0.35,0.2];
+    h = histogram(lnA_store{n});
+    h.FaceColor = [0,0.35,0.25];
     h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 0.85;
+    h.FaceAlpha = 1;
     hold on
     scatter(mean(lnA_store{n}), 0, 110, 'g', 'filled')
     str = join(['ln(A_', num2str(n),')']);
@@ -172,35 +172,35 @@ end
 
 
 %% A  PREEXP FACTOR HISTOGRAMS 
-figure;
-subplot(2,2,1)
-hist(ln_A1)
-hold on
-scatter(lnA_mean(1), 0, 70, 'g', 'filled')
-set(gca, 'fontsize',13)
-title('ln(A_1)', 'FontSize', 15)
-
-subplot(2,2,2)
-hist(ln_A2)
-hold on
-scatter(lnA_mean(2), 0, 70, 'g', 'filled')
-set(gca, 'fontsize',13)
-title('ln(A_2)', 'FontSize', 15)
-
-subplot(2,2,3)
-hist(ln_A3)
-hold on
-scatter(lnA_mean(3), 0, 70, 'g', 'filled')
-set(gca, 'fontsize',13)
-title('ln(A_3)', 'FontSize', 15)
-
-subplot(2,2,4)
-hist(ln_A4)
-hold on
-xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
-scatter(lnA_mean(4), 0, 70, 'g', 'filled')
-set(gca, 'fontsize',13)
-title('ln(A_4)', 'FontSize', 15)
+% figure;
+% subplot(2,2,1)
+% hist(ln_A1)
+% hold on
+% scatter(lnA_mean(1), 0, 70, 'g', 'filled')
+% set(gca, 'fontsize',13)
+% title('ln(A_1)', 'FontSize', 15)
+% 
+% subplot(2,2,2)
+% hist(ln_A2)
+% hold on
+% scatter(lnA_mean(2), 0, 70, 'g', 'filled')
+% set(gca, 'fontsize',13)
+% title('ln(A_2)', 'FontSize', 15)
+% 
+% subplot(2,2,3)
+% hist(ln_A3)
+% hold on
+% scatter(lnA_mean(3), 0, 70, 'g', 'filled')
+% set(gca, 'fontsize',13)
+% title('ln(A_3)', 'FontSize', 15)
+% 
+% subplot(2,2,4)
+% hist(ln_A4)
+% hold on
+% xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
+% scatter(lnA_mean(4), 0, 70, 'g', 'filled')
+% set(gca, 'fontsize',13)
+% title('ln(A_4)', 'FontSize', 15)
 
 
 %% ARRHENIUS PLOTS

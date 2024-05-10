@@ -14,148 +14,139 @@ for n = 1 : N
 
     % Create filename and load data
     str = join(['Results/my_noise', temps_strings{n}, 'K_J5000.mat']);
+    %str =join(['RESULTS/pmcmc_', temps_strings{n},'K_I3000', '.mat']);
     load(str)
+    I0 = 2000;
+    idx = I0:1:J;
+    % Store chains
+    kk1(n,:) = x14chain(idx,1);
+    kk2(n,:) = x23chain(idx,1);
+    kk3(n,:) = x23chain(idx,2);
+    kk4(n,:) = x14chain(idx,2);
 
-    % Store Estimates
-    k1_adsorb(n) = k1_est;
-    k2_adsorb(n) = k2_est;
-
-    k3_desorb(n) = k3_est;
-    k4_desorb(n) = k4_est;
+%     % Store Estimates
+%     k1_adsorb(n) = k1_est;
+%     k2_adsorb(n) = k2_est;
+% 
+%     k3_desorb(n) = k3_est;
+%     k4_desorb(n) = k4_est;
     
 
-
 end
+
+% k1 = k1_adsorb;
+% k2 = k2_adsorb;
+% k3 = k3_desorb;
+% k4 = k4_desorb;
+
+
+clearvars -except kk1 kk2 kk3 kk4 k1 k2 k3 k4 J0 J idx
+load Data/temps_info.mat
+load Data/colors.mat
 
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
 
+tidx = setdiff(1:N, []);
+
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
+I0 = length(idx);
 
-
-
-k1 = k1_adsorb;
-k2 = k2_adsorb;
-k3 = k3_desorb;
-k4 = k4_desorb;
-
-
-
-
-
-%% EXP PRIOR Ea
-% clc
-% x = 1./(R*T);
-% N_samples = 10000;
-% lambda = [1000, 1000, 0.1, 0.1];
+ %% NEW GAMMA
+alpha = [2,5, 200, 300];
+beta0 = [1,1,10,10];
+ln_beta0 = [0.03, 0.03, 0.051, 0.051];
+ln_alpha = [200, 200, 200, 200];
+x = 1./(R*T);
+N_samples = 1;
 % 
 % 
-% y = {log(k1), log(k2), -log(k3), -log(k4)};
+%     0.0345
+%     0.7242
+%    22.3280
+%    30.0046
 % 
-% figure;
-% for n = 1:4
-%     lambda_post = 1./( 1./lambda(n) + log(R) - sum(log(y{n}./T)) );
-%     mu = 1/lambda_post;
-%     Ea{n} = exprnd(mu, 1,N_samples);
-%     subplot(2,2,n)
-%     hist(Ea{n})
-%     hold on
-%     scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
-%     str = join(['Ea_', num2str(n)]);
-%     title(str, 'FontSize',17)
-%     if n==4
-%         hold on
-%         xline(24, 'Color', 'r', 'linewidth',3)
-%         hold on
-%         xline(36, 'Color', 'r', 'linewidth',3)
-%     end
-%     if n==1
-%         hold on
-%         xline(0, 'Color', 'r', 'linewidth',3)
-%     end
-%     mean(Ea{n})
-% end
-% sgtitle('Exponential Prior')
+% 
+% lnA_mean =
+% 
+%     9.2557
+%    10.0897
+%    21.3154
+%    24.4237
 
-%% OLD GAMMA prior Ea
-% alpha = [2,2,0.1,0.1];
-% beta_a = 100;
-% x = -1./(R*T);
-% 
-% figure;
-% for n = 1:4
-%     beta_post = ((1 - beta_a*sum(x.*log(y{n})))/beta_a); 
-%     Ea{n} = gamrnd(alpha(n), beta_post, 1, N_samples);
-%     subplot(2,2,n)
-%     hist(Ea{n})
-%     hold on
-%     scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
-%     str = join(['Ea_', num2str(n)]);
-%     title(str, 'FontSize',17)
-%     if n==4
-%         hold on
-%         xline(24, 'Color', 'r', 'linewidth',3)
-%         hold on
-%         xline(36, 'Color', 'r', 'linewidth',3)
-%     end
-%     if n==1
-%         hold on
-%         xline(0, 'Color', 'r', 'linewidth',3)
-%     end
-% end
-% sgtitle('Gamma Prior')
+for n = 1:4
 
-%% PRE EXP FACTOR
-% figure;
-% for n = 1:4
-%     lambda_post = 1/( 1/lambda + sum(log(y{n}))) ;
-%     mu = 1/lambda_post;
-%     lnA{n} = exprnd(mu, 1,N_samples);
-%     subplot(2,2,n)
-%     hist(lnA{n})
-%     hold on
-%     scatter(mean(lnA{n}), 0, 70, 'g', 'filled')
-%     str = join(['ln(A_', num2str(n),')']);
-%     title(str, 'FontSize',17)
-%     if n == 4
-%         hold on
-%         xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
-%     end
-% end
-% sgtitle('Exponential Prior')
-% 
-% 
+    for i = 1:I0
+    
+        y = {log(kk1(:,i)), log(kk2(:,i)), -log(min(kk3(:,i),0.05)), -log(min(kk4(:,i),0.99))};
+        beta_post = 1/( 1./beta0(n) + sum(x'.*log(y{n})) ); 
+        Ea_sample = gamrnd(alpha(n), beta_post, 1, N_samples);
+        if (isreal(Ea_sample)==0)
+            disp('stop')
+        end
+        Ea_store(i) = mean(Ea_sample);
+    
+        ln_beta_post = 1/(1/ln_beta0(n) - sum(log(y{n})));
+        lnA_sample = gamrnd(ln_alpha(n), ln_beta_post, 1, N_samples);
+        lnA_store(i) = mean(lnA_sample);
+    
+    
+    end
+    
+    nan_idx = find(isnan(Ea_store)==1);
+    Ea_store(nan_idx) = [];
+    Ea{n} = Ea_store;
+    lnA{n} = lnA_store;
 
-% %% NEW GAMMA
-% alpha = 200;
-% beta0 = 1;
-% x = 1./(R*T);
-% N_samples = 1000;
-% 
-% y = {log(k1), log(k2), -log(k3), -log(k4)};
-% 
-% figure;
-% for n = 3
-%     beta_post = 1/( 1/beta0 + sum(x.*log(y{n})) ); 
-%     Ea{n} = gamrnd(alpha, beta_post, 1, N_samples);
-%     subplot(2,2,n)
-%     hist(Ea{n})
-%     hold on
-%     scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
-%     str = join(['Ea_', num2str(n)]);
-%     title(str, 'FontSize',17)
-%     if n==4
-%         hold on
-%         xline(24, 'Color', 'r', 'linewidth',3)
-%         hold on
-%         xline(36, 'Color', 'r', 'linewidth',3)
-%     end
-%     if n==1
-%         hold on
-%         xline(0, 'Color', 'r', 'linewidth',3)
-%     end
-% end
-% sgtitle('Gamma Prior')
+end
+
+
+%%PLOT
+
+figure;
+for n = 1:4
+    subplot(2,2,n)
+    h = histogram(Ea{n});
+    h.FaceColor = [0,0,0.75];
+    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.97;
+    hold on
+    scatter(mean(Ea{n}), 0, 110, 'g', 'filled')
+    str = join(['Ea_', num2str(n)]);
+    title(str, 'FontSize',17)
+    if n==4
+        hold on
+        xline(24, 'Color', 'r', 'linewidth',3)
+        hold on
+        xline(36, 'Color', 'r', 'linewidth',3)
+    end
+    if n==1
+        hold on
+        xline(0, 'Color', 'r', 'linewidth',3)
+    end
+    %sgtitle('Gamma Prior')
+    mean(Ea{n})
+end
+
+figure;
+for n = 1:4
+    subplot(2,2,n)
+    h = histogram(lnA{n});
+    h.FaceColor = [0,0.35,0.2];
+    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.97;
+    hold on
+    scatter(mean(lnA{n}), 0, 110, 'g', 'filled')
+    str = join(['ln(A_', num2str(n),')']);
+    title(str, 'FontSize',17)
+    if n==4
+        hold on
+        xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
+    end
+    %sgtitle('Gamma Prior')
+    mean(lnA{n})
+end
+
 
 
