@@ -54,9 +54,9 @@ R = 0.001987204258;
 I0 = length(idx);
 
  %% NEW GAMMA
-alpha = [2,5, 200, 300];
-beta0 = [1,1, 10, 10];
-ln_beta0 = [0.01, 0.01, 0.05, 0.05];
+alpha = [2,5, 100, 320];
+beta0 = [10,10,10,10];
+ln_beta0 = [0.03, 0.03, 0.051, 0.051];
 ln_alpha = [200, 200, 200, 200];
 x = 1./(R*T);
 N_samples = 1;
@@ -93,9 +93,12 @@ end
 figure;
 for n = 1:4
     subplot(2,2,n)
-    hist(Ea{n})
+    h = histogram(Ea{n});
+    h.FaceColor = [0,0,0.75];
+    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.97;
     hold on
-    scatter(mean(Ea{n}), 0, 70, 'g', 'filled')
+    scatter(mean(Ea{n}), 0, 110, 'g', 'filled')
     str = join(['Ea_', num2str(n)]);
     title(str, 'FontSize',17)
     if n==4
@@ -108,23 +111,26 @@ for n = 1:4
         hold on
         xline(0, 'Color', 'r', 'linewidth',3)
     end
-    sgtitle('Gamma Prior')
+    %sgtitle('Gamma Prior')
     mean(Ea{n})
 end
 
 figure;
 for n = 1:4
     subplot(2,2,n)
-    hist(lnA{n})
+    h = histogram(lnA{n});
+    h.FaceColor = [0,0.35,0.2];
+    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.97;
     hold on
-    scatter(mean(lnA{n}), 0, 70, 'g', 'filled')
-    str = join(['lnA_', num2str(n)]);
+    scatter(mean(lnA{n}), 0, 110, 'g', 'filled')
+    str = join(['ln(A_', num2str(n),')']);
     title(str, 'FontSize',17)
     if n==4
         hold on
         xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
     end
-    sgtitle('Gamma Prior')
+    %sgtitle('Gamma Prior')
     mean(lnA{n})
 end
 
