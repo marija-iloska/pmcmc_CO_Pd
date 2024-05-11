@@ -56,7 +56,7 @@ I0 = length(idx);
  %% NEW GAMMA
 alpha = [2,5, 200, 300];
 beta0 = [1,1,10,10];
-ln_beta0 = [0.03, 0.03, 0.051, 0.051];
+ln_beta0 = [0.03, 0.031, 0.051, 0.051];
 ln_alpha = [200, 200, 200, 200];
 x = 1./(R*T);
 N_samples = 1;
@@ -88,18 +88,25 @@ for n = 1:4
 
 end
 
+Ea_bayes = Ea;
+lnA_bayes = lnA;
+
+%save('RESULTS/bayes.mat', 'Ea_bayes', "lnA_bayes");
+
 
 %%PLOT
-
+dg = [29, 125, 80]/256;
 figure;
 for n = 1:4
-    subplot(2,2,n)
+    p = subplot(2,2,n);
     h = histogram(Ea{n});
-    h.FaceColor = [0,0,0.75];
-    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 0.97;
+    %h.FaceColor = [0,0,0.75];
+    h.FaceColor = [186, 218, 247]/256;
+    h.EdgeColor = [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.67;
+    p.LineWidth = 0.95;
     hold on
-    scatter(mean(Ea{n}), 0, 110, 'g', 'filled')
+    scatter(mean(Ea{n}), 0, 110, dg, 'filled')
     str = join(['Ea_', num2str(n)]);
     title(str, 'FontSize',17)
     if n==4
@@ -114,17 +121,19 @@ for n = 1:4
     end
     %sgtitle('Gamma Prior')
     mean(Ea{n})
+    box on
 end
 
 figure;
 for n = 1:4
-    subplot(2,2,n)
+    p = subplot(2,2,n)
     h = histogram(lnA{n});
-    h.FaceColor = [0,0.35,0.2];
-    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 0.97;
+    h.FaceColor = [0.72,0.82,0.72];
+    h.EdgeColor =  [0.8, 0.8, 0.8];
+    h.FaceAlpha = 0.7;
+    p.LineWidth = 0.95;
     hold on
-    scatter(mean(lnA{n}), 0, 110, 'g', 'filled')
+    scatter(mean(lnA{n}), 0, 110, dg, 'filled')
     str = join(['ln(A_', num2str(n),')']);
     title(str, 'FontSize',17)
     if n==4

@@ -70,8 +70,10 @@ end
 Ea_mean = mean([Ea1; Ea2; Ea3; Ea4],2)
 lnA_mean = mean([ln_A1; ln_A2; ln_A3; ln_A4],2)
 
-Ea_store = {Ea1, Ea2, Ea3, Ea4};
-lnA_store = {ln_A1, ln_A2, ln_A3, ln_A4};
+Ea_freq = {Ea1, Ea2, Ea3, Ea4};
+lnA_freq = {ln_A1, ln_A2, ln_A3, ln_A4};
+
+%save('RESULTS/freq.mat', 'Ea_freq', "lnA_freq");
 
 
 % Log fitting and estimates for plotting
@@ -97,11 +99,13 @@ lnkk4 = mean(log(kk4), 2);
 %% ACTIVATION ENERGY HISTOGRAMS 
 figure;
 for n = 1:4
-    subplot(2,2,n)
+    p = subplot(2,2,n)
     h = histogram(Ea_store{n});
     h.FaceColor = [0, 0.35, 0.65];
     h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 1;
+    h.LineWidth = 0.01;
+    h.FaceAlpha = 0.95;
+    p.LineWidth = 0.95;
     hold on
     scatter(mean(Ea_store{n}), 0, 110, 'g', 'filled')
     str = join(['Ea_', num2str(n)]);
@@ -120,87 +124,24 @@ end
 
 figure;
 for n = 1:4
-    subplot(2,2,n)
+    p = subplot(2,2,n)
     h = histogram(lnA_store{n});
     h.FaceColor = [0,0.35,0.25];
-    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.FaceAlpha = 1;
+    h.EdgeColor = 'k'; %  [0.8, 0.8, 0.8];
+    h.LineWidth = 0.01;
+    h.FaceAlpha = 0.95;
+    p.LineWidth = 0.95;
     hold on
     scatter(mean(lnA_store{n}), 0, 110, 'g', 'filled')
     str = join(['ln(A_', num2str(n),')']);
     title(str, 'FontSize',17)
     if n==4
         hold on
-        xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
+        xline(log(10^13.5), 'Color', 'r', 'linewidth',4)
     end
 end
 
 
-% subplot(2,2,1)
-% hist(Ea1)
-% hold on
-% xline(0, 'Color', 'r', 'linewidth',3)
-% hold on
-% scatter(Ea_mean(1), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('Ea_1', 'FontSize', 15)
-% 
-% subplot(2,2,2)
-% hist(Ea2)
-% hold on
-% scatter(Ea_mean(2), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('Ea_2', 'FontSize', 15)
-% 
-% subplot(2,2,3)
-% hist(Ea3)
-% hold on
-% scatter(Ea_mean(3), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('Ea_3', 'FontSize', 15)
-% 
-% subplot(2,2,4)
-% hist(Ea4)
-% hold on
-% xline(24, 'Color', 'r', 'linewidth',3)
-% hold on
-% xline(36, 'Color', 'r', 'linewidth',3)
-% scatter(Ea_mean(4), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('Ea_4', 'FontSize', 15)
-
-
-
-%% A  PREEXP FACTOR HISTOGRAMS 
-% figure;
-% subplot(2,2,1)
-% hist(ln_A1)
-% hold on
-% scatter(lnA_mean(1), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('ln(A_1)', 'FontSize', 15)
-% 
-% subplot(2,2,2)
-% hist(ln_A2)
-% hold on
-% scatter(lnA_mean(2), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('ln(A_2)', 'FontSize', 15)
-% 
-% subplot(2,2,3)
-% hist(ln_A3)
-% hold on
-% scatter(lnA_mean(3), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('ln(A_3)', 'FontSize', 15)
-% 
-% subplot(2,2,4)
-% hist(ln_A4)
-% hold on
-% xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
-% scatter(lnA_mean(4), 0, 70, 'g', 'filled')
-% set(gca, 'fontsize',13)
-% title('ln(A_4)', 'FontSize', 15)
 
 
 %% ARRHENIUS PLOTS
