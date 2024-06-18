@@ -13,13 +13,33 @@ load Data/my_epsilons.mat
 load Data/temps_info.mat
 load Data/colors.mat
 
+% col{3} = [135, 171, 250]/256;
+% col{2} = [76, 117, 207]/256;
+% col{1} = [13, 48, 122]/256;
+% col{6} = [148, 38, 38]/256;
+% col{5} = [199, 48, 48]/256;
+% col{4} = [237, 164, 149]/256;
+% figure;
+% for n = 1:N
+%     plot(time_area{n}(1:length(area{n})),area{n}, 'linewidth',1.8, 'Color', col{n})
+%     hold on
+% end
+% set(gca, 'fontsize',15)
+% xlabel('Time [s]','FontSize', 20)
+% ylabel('Area', 'FontSize', 20)
+% legend(temps_strings{1:end}, 'FontSize', 18)
+% title('Processed Data', 'FontSize', 20)
+% grid on
+
+
+
 % Temperature indices
 % T_idx = {1: 450K, 2: 460K, 3: 470K, 4: 475K, 5: 480K, 6: 490K}
 
 % System specifications
 tp_idx = 45;        % Time index when P is set to 0
 cut_off = 0.27;     % Coverage around which we expect phase transition
-t_idx = 1;          % Temperature index to choose
+t_idx = 2;          % Temperature index to choose
 
 
 % Data Notation
@@ -51,7 +71,7 @@ dt = 0.067;
 
 
 % Prior Noise: Sample deviation of final points
-sigma_A = (std(y(T-5:T)))/10;
+sigma_A = (std(y(T-5:T)));
 
 % System specifications
 sys_specs = {sigma_A, epsilon, cov_sat(t_idx)};
@@ -124,7 +144,7 @@ alpha_theta = 5;
 % SAMPLER SETTINGS
 
 % Number of Gibbs iterations and burn-in
-I = 3000;
+I = 7000;
 I0 = round(I/2);
 
 % Number of particles
@@ -217,7 +237,7 @@ legend('Data Area', 'Estimated Area', 'FontSize',12)
 
 % Chains of the Coverage and Estimate
 subplot(3,1,2)
-plot(theta_chain(1,:))
+plot(theta_chain(3,:))
 hold on
 plot(theta_chain(I0,:))
 hold on
@@ -226,7 +246,7 @@ hold on
 plot(theta_est, 'k', 'linewidth',2)
 xlabel('Time', 'FontSize',12)
 xlabel('Coverage', 'FontSize',12)
-legend('1st Sample', 'I_0th Sample', 'Final Sample', 'Final Estimate', 'FontSize',12)
+legend('Early Sample', 'Middle Sample', 'Final Sample', 'Final Estimate', 'FontSize',12)
 
 
 % Chain of the noise
@@ -237,56 +257,56 @@ ylabel('Noise', 'FontSize',12)
 
 %% k PARAMETER CHAINS
 
-figure;
-
-% Region I and IV
-subplot(2,2,1)
-plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
-title('Adsorption k_1', 'FontSize', 15)
-
-subplot(2,2,2)
-plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
-title('Desorption k_4', 'FontSize', 15)
-ylim([0,0.1])
-
-% Region II and III
-subplot(2,2,3)
-plot(x23chain(1:I,1), 'k', 'linewidth', 1)
-title('Adsorption k_2 ', 'FontSize', 15)
-
-subplot(2,2,4)
-plot(x23chain(1:I,2), 'k', 'linewidth', 1)
-title('Desorption k_3 ', 'FontSize', 15)
-ylim([0,1.5])
+% figure;
+% 
+% % Region I and IV
+% subplot(2,2,1)
+% plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
+% title('Adsorption k_1', 'FontSize', 15)
+% 
+% subplot(2,2,2)
+% plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
+% title('Desorption k_4', 'FontSize', 15)
+% ylim([0,0.1])
+% 
+% % Region II and III
+% subplot(2,2,3)
+% plot(x23chain(1:I,1), 'k', 'linewidth', 1)
+% title('Adsorption k_2 ', 'FontSize', 15)
+% 
+% subplot(2,2,4)
+% plot(x23chain(1:I,2), 'k', 'linewidth', 1)
+% title('Desorption k_3 ', 'FontSize', 15)
+% ylim([0,1.5])
 
 
 %% k PARAMETER HISTOGRAMS
 
-figure;
-
-% Region II and III
-subplot(2,2,1)
-hist(x23chain(I0:I,1))
-title('R2 Ads', 'FontSize', 15)
-
-subplot(2,2,2)
-hist(x23chain(I0:I,2))
-title('R3 Des', 'FontSize', 15)
-
-% Region I and IV
-subplot(2,2,3)
-hist(x14chain(I0:I,1))
-title('R1 Ads', 'FontSize', 15)
-
-subplot(2,2,4)
-hist(x14chain(I0:I,2))
-title('R4 Des', 'FontSize', 15)
-
-sgtitle(str, 'FontSize', 15)
+% figure;
+% 
+% % Region II and III
+% subplot(2,2,1)
+% hist(x23chain(I0:I,1))
+% title('R2 Ads', 'FontSize', 15)
+% 
+% subplot(2,2,2)
+% hist(x23chain(I0:I,2))
+% title('R3 Des', 'FontSize', 15)
+% 
+% % Region I and IV
+% subplot(2,2,3)
+% hist(x14chain(I0:I,1))
+% title('R1 Ads', 'FontSize', 15)
+% 
+% subplot(2,2,4)
+% hist(x14chain(I0:I,2))
+% title('R4 Des', 'FontSize', 15)
+% 
+% sgtitle(str, 'FontSize', 15)
 
 %% SAVE RESULTS
 
-str_iter = num2str(I);
-filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
-save(filename)
+% str_iter = num2str(I);
+% filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
+% save(filename)
 

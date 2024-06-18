@@ -38,6 +38,8 @@ for n = 1 : N
         k4chain = x14chain(:,2);  
     end
 
+    sig_store{n} = var_a;
+
 end
 
 I = J;
@@ -58,7 +60,7 @@ idx = setdiff(1:N, []);
 R = 0.001987204258;
 
 % Compute Ea samples for each region using k samples (after burn-in)
-parfor j = 1:(I-I0-1)
+for j = 1:(I-I0-1)
     [Ea4(j), ln_A4(j), ln_k4(idx,j)] = compute_Ea(kk4(idx,I0+j), T(idx), R);
     [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = compute_Ea(kk3(idx,I0+j), T(idx), R);
     
@@ -97,145 +99,218 @@ lnkk4 = mean(log(kk4), 2);
 % PLOTS ==================================================================
 
 %% ACTIVATION ENERGY HISTOGRAMS 
-figure;
-for n = 1:4
-    p = subplot(2,2,n)
-    h = histogram(Ea_store{n});
-    h.FaceColor = [0, 0.35, 0.65];
-    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
-    h.LineWidth = 0.01;
-    h.FaceAlpha = 0.95;
-    p.LineWidth = 0.95;
-    hold on
-    scatter(mean(Ea_store{n}), 0, 110, 'g', 'filled')
-    str = join(['Ea_', num2str(n)]);
-    title(str, 'FontSize',17)
-    if n==4
-        hold on
-        xline(24, 'Color', 'r', 'linewidth',3)
-        hold on
-        xline(36, 'Color', 'r', 'linewidth',3)
-    end
-    if n==1
-        hold on
-        xline(0, 'Color', 'r', 'linewidth',3)
-    end
-end
-
-figure;
-for n = 1:4
-    p = subplot(2,2,n)
-    h = histogram(lnA_store{n});
-    h.FaceColor = [0,0.35,0.25];
-    h.EdgeColor = 'k'; %  [0.8, 0.8, 0.8];
-    h.LineWidth = 0.01;
-    h.FaceAlpha = 0.95;
-    p.LineWidth = 0.95;
-    hold on
-    scatter(mean(lnA_store{n}), 0, 110, 'g', 'filled')
-    str = join(['ln(A_', num2str(n),')']);
-    title(str, 'FontSize',17)
-    if n==4
-        hold on
-        xline(log(10^13.5), 'Color', 'r', 'linewidth',4)
-    end
-end
+% figure;
+% for n = 1:4
+%     p = subplot(2,2,n)
+%     h = histogram(Ea_store{n});
+%     h.FaceColor = [0, 0.35, 0.65];
+%     h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+%     h.LineWidth = 0.01;
+%     h.FaceAlpha = 0.95;
+%     p.LineWidth = 0.95;
+%     hold on
+%     scatter(mean(Ea_store{n}), 0, 110, 'g', 'filled')
+%     str = join(['Ea_', num2str(n)]);
+%     title(str, 'FontSize',17)
+%     if n==4
+%         hold on
+%         xline(24, 'Color', 'r', 'linewidth',3)
+%         hold on
+%         xline(36, 'Color', 'r', 'linewidth',3)
+%     end
+%     if n==1
+%         hold on
+%         xline(0, 'Color', 'r', 'linewidth',3)
+%     end
+% end
+% 
+% figure;
+% for n = 1:4
+%     p = subplot(2,2,n)
+%     h = histogram(lnA_store{n});
+%     h.FaceColor = [0,0.35,0.25];
+%     h.EdgeColor = 'k'; %  [0.8, 0.8, 0.8];
+%     h.LineWidth = 0.01;
+%     h.FaceAlpha = 0.95;
+%     p.LineWidth = 0.95;
+%     hold on
+%     scatter(mean(lnA_store{n}), 0, 110, 'g', 'filled')
+%     str = join(['ln(A_', num2str(n),')']);
+%     title(str, 'FontSize',17)
+%     if n==4
+%         hold on
+%         xline(log(10^13.5), 'Color', 'r', 'linewidth',4)
+%     end
+% end
 
 
 
 
 %% ARRHENIUS PLOTS
-% figure;
-% subplot(2,2,1)
-% scatter(1./T(idx), lnkk1(idx), 'k','filled')
-% hold on 
-% plot(1./T(idx), ln_kk1(idx),'Color',  col{4}, 'linewidth',2)
-% title('Adsorption k_1', 'FontSize', 15)
-% ylim([9.2,9.25])
-% set(gca, 'fontsize',13)
-% xlabel('1/T [K^-^1]', 'FontSize', 15)
-% ylabel('ln(k)', 'FontSize', 15)
-% box on
-% 
-% subplot(2,2,2)
-% scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
-% hold on
-% plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
-% title('Adsorption k_2', 'FontSize', 15)
-% ylim([9.2,9.45])
-% set(gca, 'fontsize',13)
-% xlabel('1/T [K^-^1]', 'FontSize', 15)
-% ylabel('ln(k)', 'FontSize', 15)
-% box on
-% 
-% subplot(2,2,3)
-% scatter(1./T(idx), lnkk3(idx), 'k', 'filled')
-% hold on
-% plot(1./T(idx), ln_kk3(idx), 'Color', col{1}, 'LineWidth', 2)
-% title('Desorption k_3', 'FontSize', 15)
-% ylim([-6,1])
-% set(gca, 'fontsize',13)
-% xlabel('1/T [K^-^1]', 'FontSize', 15)
-% ylabel('ln(k)', 'FontSize', 15)
-% box on
-% 
-% subplot(2,2,4)
-% scatter(1./T(idx), lnkk4(idx),  'k','filled')
-% hold on
-% plot(1./T(idx), ln_kk4(idx), 'Color', col{1}, 'LineWidth', 2)
-% title('Desorption k_4', 'FontSize', 15)
-% ylim([-10,0])
-% set(gca, 'fontsize',13)
-% xlabel('1/T [K^-^1]', 'FontSize', 15)
-% ylabel('ln(k)', 'FontSize', 15)
-% box on
+col{3} = [135, 171, 250]/256;
+col{2} = [76, 117, 207]/256;
+col{1} = [13, 48, 122]/256;
+col{6} = [148, 38, 38]/256;
+col{5} = [199, 48, 48]/256;
+col{4} = [237, 164, 149]/256;
+
+figure;
+p =subplot(2,2,1);
+p.LineWidth = 0.9;
+scatter(1./T(idx), lnkk1(idx), 'k','filled')
+hold on 
+plot(1./T(idx), ln_kk1(idx),'Color',  col{3}, 'linewidth',2)
+title('Adsorption k_1', 'FontSize', 15)
+ylim([9.2,9.25])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
+
+p =subplot(2,2,2)
+p.LineWidth = 0.9;
+scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
+hold on
+plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
+title('Adsorption k_2', 'FontSize', 15)
+ylim([9.2,9.45])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
+
+p =subplot(2,2,3)
+p.LineWidth = 0.9;
+scatter(1./T(idx), lnkk3(idx), 'k', 'filled')
+hold on
+plot(1./T(idx), ln_kk3(idx), 'Color', col{4}, 'LineWidth', 2)
+title('Desorption k_3', 'FontSize', 15)
+ylim([-6,1])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
+
+p = subplot(2,2,4)
+p.LineWidth = 0.9;
+scatter(1./T(idx), lnkk4(idx),  'k','filled')
+hold on
+plot(1./T(idx), ln_kk4(idx), 'Color', col{3}, 'LineWidth', 2)
+title('Desorption k_4', 'FontSize', 15)
+ylim([-10,0])
+set(gca, 'fontsize',13)
+xlabel('1/T [K^-^1]', 'FontSize', 15)
+ylabel('ln(k)', 'FontSize', 15)
+box on
 
 
 %% ALL COVERAGE RESULTS
+close all
+col{3} = [135, 171, 250]/256;
+col{2} = [76, 117, 207]/256;
+col{1} = [13, 48, 122]/256;
+col{6} = [148, 38, 38]/256;
+col{5} = [199, 48, 48]/256;
+col{4} = [237, 164, 149]/256;
 % figure;
 % for n = 1:N
-%     plot(time_area{n}(1:length(theta{n})),theta{n}, 'linewidth',2, 'Color', col{n})
+%     blue = blue - [-0.07, 0.08, 0.09];
+%     plot(time_area{n}(1:length(theta{n})),theta{n}, 'linewidth',1.8, 'Color', col{n})
 %     hold on
 % end
-% xlabel('Time [s]','FontSize', 15)
-% ylabel('Covereage [ML]', 'FontSize', 15)
-% set(gca, 'fontsize',13)
-% legend(temps_strings{1:end}, 'FontSize', 15)
-% title('Inferred Latent States', 'FontSize', 15)
+% set(gca, 'fontsize',15)
+% xlabel('Time [s]','FontSize', 20)
+% ylabel('Covereage [ML]', 'FontSize', 20)
+% legend(temps_strings{1:end}, 'FontSize', 18)
+% title('Inferred Latent States', 'FontSize', 20)
 % grid on
+
 % 
 % 
+%% MARKOV CHAINS 
+
+% col{6} = [207, 37, 37]/256;
 % 
-% %% MARKOV CHAINS 
 % figure;
-% subplot(2,2,1)
+% p =subplot(2,2,1)
+% p.LineWidth = 0.9;
 % plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
 % set(gca, 'fontsize',13)
 % title('Adsorption k_1', 'FontSize', 15)
 % xlim([0,I])
+% box on
 % 
-% subplot(2,2,4)
+% p = subplot(2,2,4)
+% p.LineWidth = 0.9;
 % plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
 % set(gca, 'fontsize',13)
 % title('Desorption k_4', 'FontSize', 15)
 % ylim([0,0.06])
 % xlim([0,I])
+% box on
 % 
-% subplot(2,2,2)
-% plot(x23chain(1:I,1), 'k', 'linewidth', 1)
+% p =subplot(2,2,2)
+% p.LineWidth = 0.9;
+% plot(x23chain(1:I,1), 'Color', col{6}, 'linewidth', 1)
 % set(gca, 'fontsize',13)
 % title('Adsorption k_2 ', 'FontSize', 15)
 % xlim([0,I])
+% box on
 % 
-% subplot(2,2,3)
-% plot(x23chain(1:I,2), 'k', 'linewidth', 1)
+% p = subplot(2,2,3)
+% p.LineWidth = 0.9;
+% plot(x23chain(1:I,2), 'Color', col{6}, 'linewidth', 1)
 % set(gca, 'fontsize',13)
 % title('Desorption k_3 ', 'FontSize', 15)
 % ylim([0,1])
 % xlim([0,I])
+% box on
 % 
+
+%% ALL MCMC chains
+
+% col{6} = [207, 37, 37]/256;
 % 
-% %% MIX figure for paper
+% t = 6;
+% 
+% figure;
+% p =subplot(2,2,1)
+% p.LineWidth = 0.9;
+% plot(kk1(t, 1:I), 'Color',col{1}, 'linewidth', 1)
+% set(gca, 'fontsize',13)
+% title('Adsorption k_1', 'FontSize', 15)
+% xlim([0,I])
+% box on
+% 
+% p = subplot(2,2,4)
+% p.LineWidth = 0.9;
+% plot(kk4(t, 1:I), 'Color',col{1},'linewidth', 1)
+% set(gca, 'fontsize',13)
+% title('Desorption k_4', 'FontSize', 15)
+% ylim([0,0.06])
+% xlim([0,I])
+% box on
+% 
+% p =subplot(2,2,2)
+% p.LineWidth = 0.9;
+% plot(kk2(t,1:I), 'Color', col{6}, 'linewidth', 1)
+% set(gca, 'fontsize',13)
+% title('Adsorption k_2 ', 'FontSize', 15)
+% xlim([0,I])
+% box on
+% 
+% p = subplot(2,2,3)
+% p.LineWidth = 0.9;
+% plot(kk3(t,1:I), 'Color', col{6}, 'linewidth', 1)
+% set(gca, 'fontsize',13)
+% title('Desorption k_3 ', 'FontSize', 15)
+% ylim([0,1])
+% xlim([0,I])
+% box on
+
+
+
+%% MIX figure for paper
 % 
 % figure;
 % subplot(2,2,1)
@@ -276,6 +351,25 @@ end
 % xlabel('1/T [K^-^1]', 'FontSize', 15)
 % ylabel('ln(k)', 'FontSize', 15)
 % box on
+
+%% Variance convergences
+
+figure;
+for n = 1:N
+ 
+    plot(I0:I, sig_store{n}(I0:end), 'linewidth',1.8, 'Color', col{n})
+    hold on
+end
+set(gca, 'fontsize',15)
+xlabel('Time [s]','FontSize', 20)
+ylabel('Covereage [ML]', 'FontSize', 20)
+legend(temps_strings{1:end}, 'FontSize', 18)
+title('Inferred Latent States', 'FontSize', 20)
+grid on
+
+
+
+
 
 %% SAVE RESULTS
 %save('Ea_res.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )

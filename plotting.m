@@ -71,3 +71,9 @@ for n = 1:8
     end
     ylim([0, 600])
 end
+
+for r = 1:4
+
+    mean(Ea_freq{r})
+
+end
