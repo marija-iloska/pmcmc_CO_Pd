@@ -54,10 +54,15 @@ R = 0.001987204258;
 I0 = length(idx);
 
  %% NEW GAMMA
-alpha = [2,5, 200, 300];
-beta0 = [1,1,10,10];
-ln_beta0 = [0.03, 0.031, 0.051, 0.051];
-ln_alpha = [200, 200, 200, 200];
+alpha = [0.1,0.1, 1, 1];
+beta0 = [10,10, 10,10]*2;
+ln_beta0 = [1, 2, 1, 1]*2;
+ln_alpha = [1, 1, 10, 10];
+ 
+% alpha = [0.0345,0.7242, 22.328, 30.0046];
+% beta0 = [1, 1, 1, 1];
+% ln_beta0 = [1, 1, 1, 1];
+% ln_alpha = [9.2557, 10.0897, 21.3154, 24.4237];
 x = 1./(R*T);
 N_samples = 1;
 
@@ -67,14 +72,14 @@ for n = 1:4
     for i = 1:I0
     
         y = {log(kk1(:,i)), log(kk2(:,i)), -log(min(kk3(:,i),0.05)), -log(min(kk4(:,i),0.99))};
-        beta_post = 1/( 1./beta0(n) + sum(x'.*log(y{n})) ); 
+        beta_post = 1/( 1./beta0(n) + 1./sum(x'.*log(y{n})) ); 
         Ea_sample = gamrnd(alpha(n), beta_post, 1, N_samples);
         if (isreal(Ea_sample)==0)
             disp('stop')
         end
         Ea_store(i) = mean(Ea_sample);
     
-        ln_beta_post = 1/(1/ln_beta0(n) - sum(log(y{n})));
+        ln_beta_post = 1/(1/ln_beta0(n) - 1./sum(log(y{n})));
         lnA_sample = gamrnd(ln_alpha(n), ln_beta_post, 1, N_samples);
         lnA_store(i) = mean(lnA_sample);
     
