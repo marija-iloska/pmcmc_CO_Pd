@@ -13,24 +13,12 @@ load Data/my_epsilons.mat
 load Data/temps_info.mat
 load Data/colors.mat
 
-% col{3} = [135, 171, 250]/256;
-% col{2} = [76, 117, 207]/256;
-% col{1} = [13, 48, 122]/256;
-% col{6} = [148, 38, 38]/256;
-% col{5} = [199, 48, 48]/256;
-% col{4} = [237, 164, 149]/256;
-% figure;
-% for n = 1:N
-%     plot(time_area{n}(1:length(area{n})),area{n}, 'linewidth',1.8, 'Color', col{n})
-%     hold on
-% end
-% set(gca, 'fontsize',15)
-% xlabel('Time [s]','FontSize', 20)
-% ylabel('Area', 'FontSize', 20)
-% legend(temps_strings{1:end}, 'FontSize', 18)
-% title('Processed Data', 'FontSize', 20)
-% grid on
 
+% Paths to access functions from other folders
+function_paths = [genpath('monte_carlo/'), genpath('util/')];
+
+% Add the paths
+addpath(function_paths)
 
 
 % Temperature indices
@@ -141,7 +129,7 @@ regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T}
 % Prior param for sampling theta
 alpha_theta = 5;
 
-% SAMPLER SETTINGS
+% SAMPLER SETTINGS  ========================================================
 
 % Number of Gibbs iterations and burn-in
 I = 7000;
@@ -227,7 +215,7 @@ k2_est = mean(x23chain(I0:I, 1),1);
 
 figure;
 % Area vs Estimated Area
-subplot(3,1,1)
+subplot(2,1,1)
 plot(time(1:T), y, 'LineStyle','--', 'LineWidth',1)
 hold on
 plot(time(1:T), epsilon.*theta_est', 'LineStyle','-', 'LineWidth',1)
@@ -236,7 +224,7 @@ legend('Data Area', 'Estimated Area', 'FontSize',12)
 
 
 % Chains of the Coverage and Estimate
-subplot(3,1,2)
+subplot(2,1,2)
 plot(theta_chain(3,:))
 hold on
 plot(theta_chain(I0,:))
@@ -248,12 +236,6 @@ xlabel('Time', 'FontSize',12)
 xlabel('Coverage', 'FontSize',12)
 legend('Early Sample', 'Middle Sample', 'Final Sample', 'Final Estimate', 'FontSize',12)
 
-
-% Chain of the noise
-subplot(3,1,3)
-plot(sigma_Achain, 'k', 'linewidth',2)
-xlabel('Iterations', 'FontSize',12)
-ylabel('Noise', 'FontSize',12)
 
 %% k PARAMETER CHAINS
 
