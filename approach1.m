@@ -31,17 +31,8 @@ for n = 1 : N
     kk3(n,:) = x23chain(:,2);
     kk4(n,:) = x14chain(:,2);
 
-    % Only For plotting
-    if n==2
-        k2chain = x23chain(:,1);
-        k4chain = x14chain(:,2);  
-    end
-
-    sig_store{n} = var_a;
-
 end
 
-I = J;
 
 
 %% GET ESTIMATES
@@ -59,7 +50,7 @@ idx = setdiff(1:N, []);
 R = 0.001987204258;
 
 % Compute Ea samples for each region using k samples (after burn-in)
-for j = 1:(I-I0-1)
+for j = 1:(J-I0-1)
     [Ea4(j), ln_A4(j), ln_k4(idx,j)] = compute_Ea(kk4(idx,I0+j), T(idx), R);
     [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = compute_Ea(kk3(idx,I0+j), T(idx), R);
     
@@ -223,36 +214,36 @@ t = 6;
 figure;
 p =subplot(2,2,1)
 p.LineWidth = 0.9;
-plot(kk1(t, 1:I), 'Color',col{1}, 'linewidth', 1)
+plot(kk1(t, 1:J), 'Color',col{1}, 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Adsorption k_1', 'FontSize', 15)
-xlim([0,I])
+xlim([0,J])
 box on
 
 p = subplot(2,2,4)
 p.LineWidth = 0.9;
-plot(kk4(t, 1:I), 'Color',col{1},'linewidth', 1)
+plot(kk4(t, 1:J), 'Color',col{1},'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Desorption k_4', 'FontSize', 15)
 ylim([0,0.06])
-xlim([0,I])
+xlim([0,J])
 box on
 
 p =subplot(2,2,2)
 p.LineWidth = 0.9;
-plot(kk2(t,1:I), 'Color', col{6}, 'linewidth', 1)
+plot(kk2(t,1:J), 'Color', col{6}, 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Adsorption k_2 ', 'FontSize', 15)
-xlim([0,I])
+xlim([0,J])
 box on
 
 p = subplot(2,2,3)
 p.LineWidth = 0.9;
-plot(kk3(t,1:I), 'Color', col{6}, 'linewidth', 1)
+plot(kk3(t,1:J), 'Color', col{6}, 'linewidth', 1)
 set(gca, 'fontsize',13)
 title('Desorption k_3 ', 'FontSize', 15)
 ylim([0,1])
-xlim([0,I])
+xlim([0,J])
 box on
 
 
