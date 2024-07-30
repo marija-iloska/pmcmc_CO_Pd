@@ -84,8 +84,8 @@ for r = 1:4
 end
 
 % Label for plotting
-Ea_bayes = Ea;
-lnA_bayes = lnA;
+Ea_approach2 = Ea;
+lnA_approach2 = lnA;
 
 %save('RESULTS/bayes.mat', 'Ea_bayes', "lnA_bayes");
 
