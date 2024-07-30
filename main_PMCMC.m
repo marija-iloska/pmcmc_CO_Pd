@@ -7,9 +7,9 @@ clc
 
 % Load: Area time series, Saturation coverage, Prior estimated epsilons
 % ... Labels for temperatures, Plotting colors
-load Data/my_areas.mat
+load Data/areas.mat
 load Data/expected_coverage.mat
-load Data/my_epsilons.mat
+load Data/epsilons.mat
 load Data/temps_info.mat
 load Data/colors.mat
 
