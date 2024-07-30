@@ -1,4 +1,4 @@
-# A Particle Markov Chain Monte Carlo Approach to Inference in Transient Surface Kinetics
+# A Particle Markov Chain Monte Carlo Approach to Inference in Transient Surface Kinetics [Under Review]
 
 ### Intro
 In this paper, we propose a PMCMC sampler to infer the kinetics of the adsorption and desorption of carbon monoxide (CO) on a palladium (Pd(111)) crystal. 
