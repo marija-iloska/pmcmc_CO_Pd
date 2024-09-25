@@ -1,4 +1,4 @@
-function [w_cov, theta_est, theta_particles] = compute_weights(y, epsilon, theta_particles, var_A, M)
+function [theta_est, theta_particles] = compute_weights(y, epsilon, theta_particles, var_A, M)
 
 
 % Compute epsilon weights

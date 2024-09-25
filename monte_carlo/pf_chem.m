@@ -36,11 +36,11 @@ for t = 2:T
     theta_particles = beta_random(alpha, 2*theta_mean{r})/2;
 
     if (isnan(theta_particles))
-        disp('Theta was sampled outside of bounds. Try again.')
+        disp('Theta was sampled outside of bounds.')
     end
 
     % Compute epsilon weights
-    [w_cov, theta_est(t), theta_particles] = compute_weights(y(t), epsilon(t), theta_particles, var_A, M);
+    [theta_est(t), theta_particles] = compute_weights(y(t), epsilon(t), theta_particles, var_A, M);
 
     % Store samples
     theta_store(t,:) = theta_particles;
@@ -61,6 +61,6 @@ for t = 2:T
 end
 
 % Take one sample of entire Time horizon
-idx = datasample(1:M, 1, 'Weights', w_cov);
+idx = datasample(1:M, 1);
 theta_sample = theta_store(:, idx);
 

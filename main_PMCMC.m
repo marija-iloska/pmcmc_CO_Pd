@@ -7,11 +7,9 @@ clc
 
 % Load: Area time series, Saturation coverage, Prior estimated epsilons
 % ... Labels for temperatures, Plotting colors
-load Data/areas.mat
-load Data/expected_coverage.mat
-load Data/epsilons.mat
-load Data/temps_info.mat
-load Data/colors.mat
+load data/co_pd_data.mat
+load data/temps_info.mat
+load data/colors.mat
 
 
 % Paths to access functions from other folders
@@ -26,13 +24,14 @@ addpath(function_paths)
 
 % System specifications
 tp_idx = 45;        % Time index when P is set to 0
-cut_off = 0.27;     % Coverage around which we expect phase transition
-t_idx = 2;          % Temperature index to choose
+cut_off = 0.28;     % Coverage around which we expect phase transition
+t_idx = 5;          % Temperature index to choose
 
 
 % Data Notation
 time = time_area{t_idx};
 y = area{t_idx}';
+cov_eq = cov_equilibrium(t_idx);
 
 
 % Length of data and temperature label
@@ -41,12 +40,13 @@ str = temps_strings{t_idx};
 
 
 % Prior estimations: Epsilon at saturation and lower regions
-eps_sat = mean(y(tp_idx - 10 : tp_idx+1))/cov_sat(t_idx);
-eps_exp = epsilon_exp(t_idx);
+eps_eq = mean(y(tp_idx - 10 : tp_idx+1))/cov_eq;
+%eps_eq = eps_equilibrium(t_idx);
+eps_low = eps_low_regions(t_idx);
 
 % Obtain epsilons between low and high regions for all points
 w = (y./ max(y));
-epsilon = w.*eps_sat + (1-w).*eps_exp;
+epsilon = w.*eps_eq + (1-w).*eps_low;
 
 
 % Physical Constraints: Bounds for state theta (coverage)
@@ -58,12 +58,12 @@ P = 0.001;
 dt = 0.067;
 
 
-% Prior Noise: Sample deviation of final points
-sigma_A = (std(y(T-5:T)));
+% Prior Noise
+sigma_A = 1e-4;
 
 % System specifications
-sys_specs = {sigma_A, epsilon, cov_sat(t_idx)};
-bounds = {tp_idx, cut_off, cov_sat(t_idx), theta_max, theta_min};
+sys_specs = {sigma_A, epsilon, cov_eq};
+bounds = {tp_idx, cut_off, cov_eq, theta_max, theta_min};
 
 
 % METROPOLIS HASTINGS (MH) ================================================
@@ -103,8 +103,8 @@ k1 = min([k1_lim, k1]);
 
 % Propose k2
 x2 = gamrnd(alpha1, beta1);
-k2 = k3*cov_sat(t_idx)/(theta_max - cov_sat(t_idx))/P + x2;
-k2_lim = (theta_max - a3*cov_sat)/(dt*P*(theta_max - cov_sat));
+k2 = k3*cov_eq/(theta_max - cov_eq)/P + x2;
+k2_lim = (theta_max - a3*cov_eq)/(dt*P*(theta_max - cov_eq));
 k2 = min([k2_lim, k2]);
 
 
@@ -118,7 +118,7 @@ x14 = [k1, k4, x1];
 x23 = [k2, k3, x2];
 
 
-% Format as input in particle filter (PF)
+% Format conveniently as input in particle filter (PF)
 a = [a1, a2, 0, 0];
 b = [a4, a3, a3, a4];
 
@@ -127,7 +127,8 @@ tp_AB = [5, 60];
 regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx + 1 : tp_AB(2), tp_AB(2):T};
 
 % Prior param for sampling theta
-alpha_theta = 5;
+alpha_theta = 2;
+
 
 % SAMPLER SETTINGS  ========================================================
 
@@ -155,7 +156,7 @@ for i = 1:I
     [theta_sample] = pf_chem(y, sys_specs, bounds, a, b, M, alpha_theta);
     theta_chain(i,:) = theta_sample;
 
-    % Update region indices
+    % Update region indices based on last sample
     tp_AB = find(theta_sample > cut_off);
     tp_AB = [tp_AB(1), tp_AB(end)];
     regions = {1 : tp_AB(1), tp_AB(1)+1 : tp_idx, tp_idx : tp_AB(2), tp_AB(2):T};
@@ -204,11 +205,9 @@ toc
 % Get estimates
 theta_est = mean(theta_chain(I0:I,:),1);
 
-k4_est = mean(x14chain(I0:I, 2),1);
-k1_est = mean(x14chain(I0:I, 1),1);
-
-k3_est = mean(x23chain(I0:I, 2),1);
-k2_est = mean(x23chain(I0:I, 1),1);
+% Store chains
+k_chains = {x14chain(1:I,1), x23chain(1:I,1), x23chain(1:I,2), x14chain(1:I,2)};
+chain_plot_labels = {'Adsorption k_1', 'Adsorption k_2', 'Desorption k_3', 'Desorption k_4'};
 
 
 %% Visualize Data Fitting and Chain convergence
@@ -216,22 +215,21 @@ k2_est = mean(x23chain(I0:I, 1),1);
 figure;
 % Area vs Estimated Area
 subplot(2,1,1)
-plot(time(1:T), y, 'LineStyle','--', 'LineWidth',1)
 hold on
+plot(time(1:T), y, 'LineStyle','--', 'LineWidth',1)
 plot(time(1:T), epsilon.*theta_est', 'LineStyle','-', 'LineWidth',1)
+hold off
 title('Epsilon * Theta', 'FontSize', 15)
 legend('Data Area', 'Estimated Area', 'FontSize',12)
 
-
 % Chains of the Coverage and Estimate
 subplot(2,1,2)
+hold on
 plot(theta_chain(3,:))
-hold on
 plot(theta_chain(I0,:))
-hold on
 plot(theta_chain(I,:))
-hold on
 plot(theta_est, 'k', 'linewidth',2)
+hold off
 xlabel('Time', 'FontSize',12)
 xlabel('Coverage', 'FontSize',12)
 legend('Early Sample', 'Middle Sample', 'Final Sample', 'Final Estimate', 'FontSize',12)
@@ -239,56 +237,17 @@ legend('Early Sample', 'Middle Sample', 'Final Sample', 'Final Estimate', 'FontS
 
 %% k PARAMETER CHAINS
 
-% figure;
-% 
-% % Region I and IV
-% subplot(2,2,1)
-% plot(x14chain(1:I,1), 'Color',col{1}, 'linewidth', 1)
-% title('Adsorption k_1', 'FontSize', 15)
-% 
-% subplot(2,2,2)
-% plot(x14chain(1:I,2), 'Color',col{1},'linewidth', 1)
-% title('Desorption k_4', 'FontSize', 15)
-% ylim([0,0.1])
-% 
-% % Region II and III
-% subplot(2,2,3)
-% plot(x23chain(1:I,1), 'k', 'linewidth', 1)
-% title('Adsorption k_2 ', 'FontSize', 15)
-% 
-% subplot(2,2,4)
-% plot(x23chain(1:I,2), 'k', 'linewidth', 1)
-% title('Desorption k_3 ', 'FontSize', 15)
-% ylim([0,1.5])
+figure(2)
+for r = 1:4
+    subplot(2,2,r)
+    plot(k_chains{r}, 'Color',col{1}, 'linewidth', 1)
+    title(chain_plot_labels{r}, 'FontSize', 15)
+end
 
-
-%% k PARAMETER HISTOGRAMS
-
-% figure;
-% 
-% % Region II and III
-% subplot(2,2,1)
-% hist(x23chain(I0:I,1))
-% title('R2 Ads', 'FontSize', 15)
-% 
-% subplot(2,2,2)
-% hist(x23chain(I0:I,2))
-% title('R3 Des', 'FontSize', 15)
-% 
-% % Region I and IV
-% subplot(2,2,3)
-% hist(x14chain(I0:I,1))
-% title('R1 Ads', 'FontSize', 15)
-% 
-% subplot(2,2,4)
-% hist(x14chain(I0:I,2))
-% title('R4 Des', 'FontSize', 15)
-% 
-% sgtitle(str, 'FontSize', 15)
 
 %% SAVE RESULTS
 
 % str_iter = num2str(I);
-% filename = join(['RESULTS/pmcmc_', str,'K_I', str_iter, '.mat']);
+% filename = join(['results/', str,'K_J', str_iter, '.mat']);
 % save(filename)
 

@@ -10,6 +10,7 @@ k4_old = x_old(2);
 % Get old proposal for a4 q(a4 | alpha4, beta4_old)
 beta4_old = (1 - k4_old*dt)*alpha4/(k4_old*dt);
 
+
 % Propose sample for k4
 k4_star = betarnd(alpha4, beta4_old)/dt;
 a4_star = 1 - k4_star*dt;
@@ -30,7 +31,6 @@ beta4_star = (1 - k4_star*dt)*alpha4/(k4_star*dt);
 yR1 = y(regions{1});
 yR1A = M - yR1;
 yR4 = y(regions{4});
-
 
 
 % Form a params

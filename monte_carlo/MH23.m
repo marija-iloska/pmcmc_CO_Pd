@@ -1,7 +1,7 @@
 function [x] = MH23(y, regions, x_old, bounds, P, dt, alpha3, alpha, alpha2, beta2)
 
 % Restore last values
-[~, ~, cov_sat, M, ~] = bounds{:};
+[~, ~, cov_eq, M, ~] = bounds{:};
 
 % Old values
 k2_old = x_old(1);
@@ -18,8 +18,8 @@ a3_old = 1 - k3_old*dt;
 
 % Propose sample for k1
 x2_star = gamrnd(alpha2, beta2);
-k2_star = k3_star*cov_sat/(M - cov_sat)/P + x2_star;
-k2_lim = (M - a3_star*cov_sat)/(dt*P*(M - cov_sat));
+k2_star = k3_star*cov_eq/(M - cov_eq)/P + x2_star;
+k2_lim = (M - a3_star*cov_eq)/(dt*P*(M - cov_eq));
 k2_star = min([k2_lim, k2_star]);
 
 
@@ -75,7 +75,7 @@ ln_l2 = sum((beta_star - beta_old).*(log(1 - 2*yR2(2:end))));
 
 
 % ACCEPTANCE RATIO --------------------------------------------------
-AR = exp(ln_l2 + ln_l3 + ln_q3); % + ln_q2);
+AR = exp(ln_l2 + ln_l3 + ln_q3); 
 
 % Accept or Reject
 if (rand < AR)
