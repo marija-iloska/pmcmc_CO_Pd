@@ -1,4 +1,4 @@
-function [Ea, ln_A, ln_k] = compute_Ea(k, T, R)
+function [Ea, ln_A, ln_k_fit] = compute_Ea(lnk, T, T_fit, R)
 
 
 % Activation energy - Ea
@@ -11,13 +11,14 @@ function [Ea, ln_A, ln_k] = compute_Ea(k, T, R)
 % Let x = - 1/(RT)
 % ln(k) = Ea x + ln(A)
 x = - 1./(R*T);
+x_fit = -1./(R*T_fit);
 
 % Linear Model fitting
-dlm_Ea = fitlm(x, log(k),'Intercept',true);
+dlm_Ea = fitlm(x, lnk,'Intercept',true);
 Ea = dlm_Ea.Coefficients.Estimate(2);
 ln_A = dlm_Ea.Coefficients.Estimate(1);
 
 % Get fitted ln(k)s
-ln_k = Ea*x + ln_A;
+ln_k_fit = Ea*x_fit + ln_A;
 
 end

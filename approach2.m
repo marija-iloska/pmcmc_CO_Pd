@@ -2,40 +2,34 @@ close all
 clear all
 clc
 
-% RUN Ea
-load Data/temps_info.mat
-load Data/colors.mat
+load data/temps_info.mat
 
-% Number of Temperature datasets
-N = length(temps_strings);
 
 % Extract sampled parameters for each temperature
-for r = 1 : N
+for n = 1 : N
 
     % Create filename and load data
-    str = join(['RESULTS/pmcmc_', temps_strings{n},'K_I7000', '.mat']);
+    str = join(['results/', temps_strings{n},'K_J7000', '.mat']);
+
     load(str)
 
     I0 = 2000;
     idx = I0:1:J;
-    % Store chains
-    kk1(r,:) = x14chain(idx,1);
-    kk2(r,:) = x23chain(idx,1);
-    kk3(r,:) = x23chain(idx,2);
-    kk4(r,:) = x14chain(idx,2);
     
+    % Store chains
+    k1_chain(n,:) = x14chain(idx,1);
+    k2_chain(n,:) = x23chain(idx,1);
+    k3_chain(n,:) = x23chain(idx,2);
+    k4_chain(n,:) = x14chain(idx,2);
+  
 
 end
 
-
-clearvars -except kk1 kk2 kk3 kk4 k1 k2 k3 k4 J0 J idx
-load Data/temps_info.mat
-load Data/colors.mat
+clearvars -except k1_chain k2_chain k3_chain k4_chain J0 J idx N
+load data/colors.mat
 
 % Temperatures
 T = [450, 460, 470, 475, 480, 490];
-
-tidx = setdiff(1:N, []);
 
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
@@ -63,7 +57,7 @@ for r = 1:4
     for i = 1:I0
     
         % Transform data
-        y = {log(kk1(:,i)), log(kk2(:,i)), -log(min(kk3(:,i),0.05)), -log(min(kk4(:,i),0.99))};
+        y = {log(k1_chain(:,i)), log(k2_chain(:,i)), -log(min(k3_chain(:,i),0.05)), -log(min(k4_chain(:,i),0.99))};
 
         % Compute Ea posterior
         beta_post = 1/( 1./beta0(r) + 1./sum(x'.*log(y{r})) ); 
@@ -78,16 +72,12 @@ for r = 1:4
     end
     
     % Store means
-    Ea{r} = Ea_store;
-    lnA{r} = lnA_store;
+    Ea_approach2{r} = Ea_store;
+    lnA_approach2{r} = lnA_store;
 
 end
 
-% Label for plotting
-Ea_approach2 = Ea;
-lnA_approach2 = lnA;
-
-%save('RESULTS/bayes.mat', 'Ea_bayes', "lnA_bayes");
+%save('results/approach2.mat', 'Ea_approach2', "lnA_approach2");
 
 
 %% VISUALIZE RESULTS 
@@ -99,14 +89,14 @@ dg = [29, 125, 80]/256;
 figure;
 for r = 1:4
     p = subplot(2,2,r);
-    h = histogram(Ea{r});
+    h = histogram(Ea_approach2{r});
     %h.FaceColor = [0,0,0.75];
     h.FaceColor = [186, 218, 247]/256;
     h.EdgeColor = [0.8, 0.8, 0.8];
     h.FaceAlpha = 0.67;
     p.LineWidth = 0.95;
     hold on
-    scatter(mean(Ea{r}), 0, 110, dg, 'filled')
+    scatter(mean(Ea_approach2{r}), 0, 110, dg, 'filled')
     str = join(['Ea_', num2str(r)]);
     title(str, 'FontSize',17)
     if r==4
@@ -125,14 +115,14 @@ end
 % Create histograms for lnA
 figure;
 for r = 1:4
-    p = subplot(2,2,r)
-    h = histogram(lnA{r});
+    p = subplot(2,2,r);
+    h = histogram(lnA_approach2{r});
     h.FaceColor = [0.72,0.82,0.72];
     h.EdgeColor =  [0.8, 0.8, 0.8];
     h.FaceAlpha = 0.7;
     p.LineWidth = 0.95;
     hold on
-    scatter(mean(lnA{r}), 0, 110, dg, 'filled')
+    scatter(mean(lnA_approach2{r}), 0, 110, dg, 'filled')
     str = join(['ln(A_', num2str(r),')']);
     title(str, 'FontSize',17)
     if r==4
@@ -140,6 +130,4 @@ for r = 1:4
         xline(log(10^13.5), 'Color', 'r', 'linewidth',3)
     end
 end
-
-
 

@@ -2,37 +2,29 @@ close all
 clear all
 clc
 
-% RUN Ea
-load Data/temps_info.mat
-load Data/colors.mat
-
-% Number of Temperature datasets
-N = length(temps_strings);
+% Load data
+load data/temps_info.mat
+load data/colors.mat
 
 % Extract sampled parameters for each temperature
 for n = 1 : N
 
     % Create filename and load data
-    str = join(['RESULTS/pmcmc_', temps_strings{n},'K_I7000', '.mat']);
+    str = join(['results/', temps_strings{n},'K_J7000', '.mat']);
+
     load(str)
-
-    % Store Estimates
-    k1_adsorb(n) = k1_est;
-    k2_adsorb(n) = k2_est;
-
-    k3_desorb(n) = k3_est;
-    k4_desorb(n) = k4_est;
-
     theta{n} = theta_est;
 
     % Store chains
-    kk1(n,:) = x14chain(:,1);
-    kk2(n,:) = x23chain(:,1);
-    kk3(n,:) = x23chain(:,2);
-    kk4(n,:) = x14chain(:,2);
+    k1_chain(n,:) = x14chain(:,1);
+    k2_chain(n,:) = x23chain(:,1);
+    k3_chain(n,:) = x23chain(:,2);
+    k4_chain(n,:) = x14chain(:,2);
 
 end
 
+% Clear some storage
+clearvars -except k1_chain k2_chain k3_chain k4_chain J0 J idx N col time_area theta
 
 
 %% GET ESTIMATES
@@ -49,13 +41,21 @@ idx = setdiff(1:N, []);
 % Ideal Gas constant  (kcal / (K mol))
 R = 0.001987204258;
 
+% Transform chain results to logs
+lnk1_chain = log(k1_chain);
+lnk2_chain = log(k2_chain);
+lnk3_chain = log(k3_chain);
+lnk4_chain = log(k4_chain);
+
+T_fit = T(1):1:T(end);
+
 % Compute Ea samples for each region using k samples (after burn-in)
 for j = 1:(J-I0-1)
-    [Ea4(j), ln_A4(j), ln_k4(idx,j)] = compute_Ea(kk4(idx,I0+j), T(idx), R);
-    [Ea3(j), ln_A3(j),  ln_k3(idx,j)] = compute_Ea(kk3(idx,I0+j), T(idx), R);
+    [Ea4(j), ln_A4(j), lnk4_fit(:,j)] = compute_Ea(lnk4_chain(:,I0+j), T, T_fit, R);
+    [Ea3(j), ln_A3(j),  lnk3_fit(:,j)] = compute_Ea(lnk3_chain(:,I0+j), T, T_fit, R);
     
-    [Ea2(j), ln_A2(j),  ln_k2(idx,j)] = compute_Ea(kk2(idx,I0+j), T(idx), R);
-    [Ea1(j), ln_A1(j),  ln_k1(idx,j)] = compute_Ea(kk1(idx,I0+j), T(idx), R);
+    [Ea2(j), ln_A2(j),  lnk2_fit(:,j)] = compute_Ea(lnk2_chain(:,I0+j), T, T_fit, R);
+    [Ea1(j), ln_A1(j),  lnk1_fit(:,j)] = compute_Ea(lnk1_chain(:,I0+j), T, T_fit, R);
 end
 
 % Compute mean estimates
@@ -63,135 +63,104 @@ Ea_mean = mean([Ea1; Ea2; Ea3; Ea4],2);
 lnA_mean = mean([ln_A1; ln_A2; ln_A3; ln_A4],2);
 
 
-
-Ea_apprach1 = {Ea1, Ea2, Ea3, Ea4};
+% Store results
+Ea_approach1 = {Ea1, Ea2, Ea3, Ea4};
 lnA_approach1 = {ln_A1, ln_A2, ln_A3, ln_A4};
 
 
-
-% Log fitting and estimates for plotting
-ln_kk1 = mean(ln_k1, 2);
-ln_kk2 = mean(ln_k2, 2);
-ln_kk3 = mean(ln_k3, 2);
-ln_kk4 = mean(ln_k4, 2);
-
-lnkk1 = mean(log(kk1), 2);
-lnkk2 = mean(log(kk2), 2);
-lnkk3 = mean(log(kk3), 2);
-lnkk4 = mean(log(kk4), 2);
+% Fitted lnk
+lnk1_fit_est = mean(lnk1_fit, 2);
+lnk2_fit_est = mean(lnk2_fit, 2);
+lnk3_fit_est = mean(lnk3_fit, 2);
+lnk4_fit_est = mean(lnk4_fit, 2);
 
 
-% Store chains
-Ea = {Ea1, Ea2, Ea3, Ea4};
-ln_A = {ln_A1, ln_A2, ln_A3, ln_A4};
-ln_kk = {ln_kk1, ln_kk2, ln_kk3, ln_kk4};
+% From data lnk
+lnk1_est = mean(lnk1_chain,2);
+lnk2_est = mean(lnk2_chain,2);
+lnk3_est = mean(lnk3_chain,2);
+lnk4_est = mean(lnk4_chain,2);
+
+% For plotting
+lnk_data = {lnk1_est, lnk2_est, lnk3_est, lnk4_est};
+lnk_fit = {lnk1_fit_est, lnk2_fit_est, lnk3_fit_est, lnk4_fit_est};
+
+% Clear some storage
+clearvars lnk1_chain lnk2_chain lnk3_chain lnk4_chain 
+
+% SAVE RESULTS
+%save('results/approach1.mat', 'Ea_approach1', "lnA_approach1");
 
 
+%% PARAMETER HISTOGRAMS 
 
-%% PLOTS 
-
-% ACTIVATION ENERGY HISTOGRAMS --------------------------------------------
+% ACTIVATION ENERGY  --------------------------------------------
 figure;
-for n = 1:4
-    p = subplot(2,2,n)
-    h = histogram(Ea_store{n});
+for r = 1:4
+    p = subplot(2,2,r);
+    h = histogram(Ea_approach1{r});
     h.FaceColor = [0, 0.35, 0.65];
-    h.EdgeColor = 'k'; % [0.8, 0.8, 0.8];
+    h.EdgeColor = 'k';
     h.LineWidth = 0.01;
     h.FaceAlpha = 0.95;
     p.LineWidth = 0.95;
     hold on
-    scatter(mean(Ea_store{n}), 0, 110, 'g', 'filled')
-    str = join(['Ea_', num2str(n)]);
+    scatter(mean(Ea_approach1{r}), 0, 110, 'g', 'filled')
+    str = join(['Ea_', num2str(r)]);
     title(str, 'FontSize',17)
-    if n==4
+    if r==4
         hold on
         xline(24, 'Color', 'r', 'linewidth',3)
         hold on
         xline(36, 'Color', 'r', 'linewidth',3)
     end
-    if n==1
+    if r==1
         hold on
         xline(0, 'Color', 'r', 'linewidth',3)
     end
 end
 
+% PRE-EXPONENTIAL FACTORS  --------------------------------------------
 figure;
-for n = 1:4
-    p = subplot(2,2,n)
-    h = histogram(lnA_store{n});
+for r = 1:4
+    p = subplot(2,2,r);
+    h = histogram(lnA_approach1{r});
     h.FaceColor = [0,0.35,0.25];
-    h.EdgeColor = 'k'; %  [0.8, 0.8, 0.8];
+    h.EdgeColor = 'k'; 
     h.LineWidth = 0.01;
     h.FaceAlpha = 0.95;
     p.LineWidth = 0.95;
     hold on
-    scatter(mean(lnA_store{n}), 0, 110, 'g', 'filled')
-    str = join(['ln(A_', num2str(n),')']);
+    scatter(mean(lnA_approach1{r}), 0, 110, 'g', 'filled')
+    str = join(['ln(A_', num2str(r),')']);
     title(str, 'FontSize',17)
-    if n==4
+    if r==4
         hold on
         xline(log(10^13.5), 'Color', 'r', 'linewidth',4)
     end
 end
 
 
-
-
-% ARRHENIUS PLOTS  ---------------------------------------------
+%% ARRHENIUS PLOTS  ---------------------------------------------
 
 figure;
-p =subplot(2,2,1);
-p.LineWidth = 0.9;
-scatter(1./T(idx), lnkk1(idx), 'k','filled')
-hold on 
-plot(1./T(idx), ln_kk1(idx),'Color',  col{3}, 'linewidth',2)
-title('Adsorption k_1', 'FontSize', 15)
-ylim([9.2,9.25])
-set(gca, 'fontsize',13)
-xlabel('1/T [K^-^1]', 'FontSize', 15)
-ylabel('ln(k)', 'FontSize', 15)
-box on
+for r = 1:4
+    p =subplot(2,2,r);
+    p.LineWidth = 0.9;
+    scatter(1./T(idx), lnk_data{r}, 'k','filled')
+    hold on 
+    plot(1./T_fit, lnk_fit{r},'Color',  col{r}, 'linewidth',2)
+    title('Adsorption k_1', 'FontSize', 15)
+    set(gca, 'fontsize',13)
+    xlabel('1/T [K^-^1]', 'FontSize', 15)
+    ylabel('ln(k)', 'FontSize', 15)
+    box on
+end
 
-p =subplot(2,2,2)
-p.LineWidth = 0.9;
-scatter(1./T(idx), lnkk2(idx), 'k', 'filled')
-hold on
-plot(1./T(idx), ln_kk2(idx), 'Color', col{4}, 'LineWidth',2)
-title('Adsorption k_2', 'FontSize', 15)
-ylim([9.2,9.45])
-set(gca, 'fontsize',13)
-xlabel('1/T [K^-^1]', 'FontSize', 15)
-ylabel('ln(k)', 'FontSize', 15)
-box on
-
-p =subplot(2,2,3)
-p.LineWidth = 0.9;
-scatter(1./T(idx), lnkk3(idx), 'k', 'filled')
-hold on
-plot(1./T(idx), ln_kk3(idx), 'Color', col{4}, 'LineWidth', 2)
-title('Desorption k_3', 'FontSize', 15)
-ylim([-6,1])
-set(gca, 'fontsize',13)
-xlabel('1/T [K^-^1]', 'FontSize', 15)
-ylabel('ln(k)', 'FontSize', 15)
-box on
-
-p = subplot(2,2,4)
-p.LineWidth = 0.9;
-scatter(1./T(idx), lnkk4(idx),  'k','filled')
-hold on
-plot(1./T(idx), ln_kk4(idx), 'Color', col{3}, 'LineWidth', 2)
-title('Desorption k_4', 'FontSize', 15)
-ylim([-10,0])
-set(gca, 'fontsize',13)
-xlabel('1/T [K^-^1]', 'FontSize', 15)
-ylabel('ln(k)', 'FontSize', 15)
-box on
 
 
 % ALL COVERAGE RESULTS  -------------------------------------------------------
-
+blue = [1,1,1];
 figure;
 for n = 1:N
     blue = blue - [-0.07, 0.08, 0.09];
@@ -208,47 +177,17 @@ grid on
 
 % ALL MCMC chains  ---------------------------------------------------------------------
 
+k_chains = {k1_chain, k2_chain, k3_chain, k4_chain};
+chain_plot_labels = {'Adsorption k_1', 'Adsorption k_2', 'Desorption k_3', 'Desorption k_4'};
+
 % Choose temperature
-t = 6;
+n = 6;
 
 figure;
-p =subplot(2,2,1)
-p.LineWidth = 0.9;
-plot(kk1(t, 1:J), 'Color',col{1}, 'linewidth', 1)
-set(gca, 'fontsize',13)
-title('Adsorption k_1', 'FontSize', 15)
-xlim([0,J])
-box on
+for r = 1:4
+    subplot(2,2,r)
+    plot(k_chains{r}(n,1:J), 'Color',col{r}, 'linewidth', 1)
+    title(chain_plot_labels{r}, 'FontSize', 15)
+    xlim([0,J])
+end
 
-p = subplot(2,2,4)
-p.LineWidth = 0.9;
-plot(kk4(t, 1:J), 'Color',col{1},'linewidth', 1)
-set(gca, 'fontsize',13)
-title('Desorption k_4', 'FontSize', 15)
-ylim([0,0.06])
-xlim([0,J])
-box on
-
-p =subplot(2,2,2)
-p.LineWidth = 0.9;
-plot(kk2(t,1:J), 'Color', col{6}, 'linewidth', 1)
-set(gca, 'fontsize',13)
-title('Adsorption k_2 ', 'FontSize', 15)
-xlim([0,J])
-box on
-
-p = subplot(2,2,3)
-p.LineWidth = 0.9;
-plot(kk3(t,1:J), 'Color', col{6}, 'linewidth', 1)
-set(gca, 'fontsize',13)
-title('Desorption k_3 ', 'FontSize', 15)
-ylim([0,1])
-xlim([0,J])
-box on
-
-
-
-
-
-% SAVE RESULTS
-% save('Ea_res.mat', 'T', 'lnkk', 'ln_kk', "kk", 'R', 'Ea', 'ln_A', 'Ea_mean', "lnA_mean" )
